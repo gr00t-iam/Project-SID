@@ -1,0 +1,13 @@
+[Unit]
+Description=Restrict Minecraft agent control ports to LXC 119
+Requires=docker.service
+After=docker.service wings.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/restrict-bridge-ports
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

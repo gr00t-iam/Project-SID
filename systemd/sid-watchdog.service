@@ -1,0 +1,7 @@
+[Unit]
+Description=Restart the SID agent runtime if it hangs or loses the game connection
+After=sid-local.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/sid-watchdog

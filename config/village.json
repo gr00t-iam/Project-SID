@@ -1,0 +1,14 @@
+{
+  "_comment": "Home lots on the village street east of the town square (street runs along x 300-302). Lots were surveyed flat, natural and empty; x,z is the north-west corner of a 5x5 house.",
+  "homes": {
+    "builder":  {"x": 294, "z": 81,  "door": "east", "material": "SPRUCE_PLANKS", "trim": "STRIPPED_OAK_LOG", "roof": "BRICKS",        "floor": "OAK_PLANKS", "bed": "BLUE_BED"},
+    "guardian": {"x": 294, "z": 88,  "door": "east", "material": "STONE_BRICKS",  "trim": "COBBLESTONE",      "roof": "SPRUCE_PLANKS", "floor": "SMOOTH_STONE", "bed": "RED_BED"},
+    "farmer":   {"x": 294, "z": 95,  "door": "east", "material": "OAK_PLANKS",    "trim": "OAK_LOG",          "roof": "HAY_BLOCK",     "floor": "SPRUCE_PLANKS", "bed": "YELLOW_BED"},
+    "scout":    {"x": 294, "z": 100, "door": "east", "material": "BIRCH_PLANKS",  "trim": "OAK_LOG",          "roof": "SPRUCE_PLANKS", "floor": "OAK_PLANKS", "bed": "GREEN_BED"},
+    "merchant": {"x": 304, "z": 81,  "door": "west", "material": "BRICKS",        "trim": "SPRUCE_LOG",       "roof": "SPRUCE_PLANKS", "floor": "SPRUCE_PLANKS", "bed": "PURPLE_BED"},
+    "crafter":  {"x": 304, "z": 88,  "door": "west", "material": "COBBLESTONE",   "trim": "OAK_LOG",          "roof": "OAK_PLANKS",    "floor": "SMOOTH_STONE", "bed": "ORANGE_BED"},
+    "governor": {"x": 304, "z": 95,  "door": "west", "material": "WHITE_TERRACOTTA", "trim": "SPRUCE_LOG",    "roof": "STONE_BRICKS",  "floor": "SPRUCE_PLANKS", "bed": "WHITE_BED"},
+    "scribe":   {"x": 304, "z": 102, "door": "west", "material": "SPRUCE_PLANKS", "trim": "SPRUCE_LOG",       "roof": "MOSSY_STONE_BRICKS", "floor": "BIRCH_PLANKS", "bed": "CYAN_BED"},
+    "miner":    {"x": 304, "z": 110, "door": "west", "material": "COBBLESTONE",   "trim": "STONE_BRICKS",     "roof": "COBBLESTONE",   "floor": "SMOOTH_STONE", "bed": "BROWN_BED"}
+  }
+}

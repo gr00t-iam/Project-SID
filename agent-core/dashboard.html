@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SID Settlement</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fffdf8;--ink:#23201b;--muted:#6f685c;--line:#e4ddd0;--accent:#2f7d4f;--warn:#b5651d;--bad:#b23b3b;--night:#34406b;--chip:#efe9dd;--me:#e6f0e8;--bot:#f1ece2}
+@media (prefers-color-scheme:dark){:root{--bg:#15171b;--card:#1e2127;--ink:#ece8e1;--muted:#9a958b;--line:#2d3139;--accent:#5fc088;--warn:#e39a52;--bad:#e06a6a;--night:#8ea2e6;--chip:#2a2e36;--me:#23352a;--bot:#262a31}}
+*{box-sizing:border-box}
+.brain{display:inline-block;filter:grayscale(1);opacity:.4;transition:opacity .3s,filter .3s;cursor:default}
+.brain.on{filter:none;opacity:1;animation:think .9s ease-in-out infinite}
+@keyframes think{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(1.18) rotate(-6deg)}50%{transform:scale(1.32);filter:drop-shadow(0 0 6px #ff5cdb)}75%{transform:scale(1.18) rotate(6deg)}}
+@media (prefers-reduced-motion:reduce){.brain.on{animation:none;filter:drop-shadow(0 0 5px #ff5cdb)}}
+.bubble{display:inline-block;font-size:12px;color:var(--muted);margin-left:4px}.bubble i{display:inline-block;width:4px;height:4px;margin:0 1px;border-radius:50%;background:#ff5cdb;animation:dots 1.2s infinite}
+.bubble i:nth-child(2){animation-delay:.2s}.bubble i:nth-child(3){animation-delay:.4s}@keyframes dots{0%,80%,100%{opacity:.2;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:12px}@media (max-width:900px){.mapgrid{grid-template-columns:1fr}}
+.mapframe{width:100%;height:68vh;border:1px solid var(--line);border-radius:12px;background:#0b0d10}
+.mind{display:flex;gap:8px;align-items:flex-start;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer}.mind:last-child{border-bottom:0}
+.mind .brain{font-size:22px;line-height:24px}.mind .who{font-weight:600}.mind .gist{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.mind.open .gist{color:var(--ink)}.mind .more{display:none;font-size:13px;margin-top:4px}.mind.open .more{display:block}
+.thought{padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}.thought:last-child{border-bottom:0}.thought .q{color:var(--muted);font-style:italic}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px 0}
+h1{font-size:17px;margin:0;white-space:nowrap}
+/* Settlement HUD: one row of grouped status pills */
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.cluster{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-left:12px;border-left:1px solid var(--line)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:1.5;padding:1px 9px;border-radius:999px;background:var(--chip);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.good{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);font-weight:600}
+.pill.muted{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.stale .dot{background:var(--warn)}
+/* Unified navigation: view tabs + section links */
+.navbar{display:flex;align-items:center;gap:10px;margin-top:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.navbar .tabs{margin:0;flex-wrap:nowrap;background:var(--chip);border-radius:999px;padding:2px;gap:2px}
+.navbar .tabs button{border:0;white-space:nowrap;padding:4px 12px;font-size:13px}
+.navsep{width:1px;align-self:stretch;background:var(--line);flex:none}
+nav{display:flex;gap:4px}
+nav a{white-space:nowrap;text-decoration:none;color:var(--muted);border-radius:999px;padding:4px 10px;font-size:13px;border:1px solid transparent}
+nav a:hover{color:var(--ink);background:var(--chip)}
+nav a.active{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);font-weight:600}
+main{padding:8px 16px 48px;max-width:1880px;margin:0 auto}
+/* Pages: one section of the town per tab, with a badge for what changed since you last looked */
+.pages{display:flex;align-items:center;gap:2px;flex-wrap:nowrap}
+.pages .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:0 4px 0 10px;white-space:nowrap}
+.pages .grp:first-child{padding-left:0}
+.pages button{position:relative;border:1px solid transparent;background:transparent;color:var(--muted);white-space:nowrap;padding:4px 11px;font-size:13px;border-radius:999px;cursor:pointer}
+.pages button:hover{color:var(--ink);background:var(--chip)}
+.pages button[aria-selected="true"]{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);font-weight:600}
+.pages .nb{display:inline-block;min-width:17px;margin-left:5px;padding:0 5px;border-radius:999px;font-size:10.5px;line-height:16px;font-weight:700;text-align:center;background:var(--accent);color:var(--card);font-variant-numeric:tabular-nums}
+.pages .nb.dot{min-width:8px;width:8px;height:8px;padding:0;vertical-align:middle}
+.pages .nb.attn{background:var(--bad)}
+.pages .nb[hidden]{display:none}
+.page[hidden]{display:none}
+.page>h2:first-child{margin-top:12px}
+@media (min-width:1400px){.cols.wide3{grid-template-columns:1fr 1fr 1fr}}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--muted);padding:4px 10px;font-size:12.5px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+/* Compact citizen cards: the essentials only; click a card for the full story */
+.bom{margin-top:4px;font-size:12.5px}.bom summary{cursor:pointer;color:var(--muted)}.bomt{border-collapse:collapse;margin-top:4px;width:100%;max-width:520px}.bomt th,.bomt td{text-align:left;padding:2px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}.bomt tr.short td{color:var(--bad);font-weight:600}.ico{width:16px;height:16px;vertical-align:-3px;margin-right:4px;image-rendering:pixelated}.chip.need{background:color-mix(in srgb,var(--bad) 18%,var(--chip))}
+.cgrid.compact{grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:8px}
+/* Every citizen card the same height (compact and cards): equal grid rows, and the parts whose length varies kept to
+   a fixed number of lines (badges, inventory, facts, what they are doing) - the rest is in the card's drawer. */
+.cgrid{grid-auto-rows:1fr;align-items:stretch}
+.cgrid .citizen{height:100%;box-sizing:border-box;overflow:hidden}
+.c-head b{flex:0 1 auto;max-width:72%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-head .lvl{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.c-act{display:flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;overflow:hidden}
+.c-act .when{overflow:hidden;text-overflow:ellipsis}
+.cgrid .tags{flex-wrap:nowrap;overflow:hidden;min-height:20px}
+.cgrid .tags .badge{white-space:nowrap;flex-shrink:0}
+.cgrid .facts span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cgrid .inv{max-height:44px;overflow:hidden;min-height:20px}
+.cgrid.compact .inv{max-height:20px}
+.inv-row{display:flex;gap:3px;align-items:flex-start;min-width:0}.inv-row .inv{flex:1;min-width:0}
+.cgrid .inv.open{max-height:none}
+.inv-row>button.chip{flex-shrink:0;font-size:11.5px;padding:0 7px;border:1px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.cgrid .callout{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cgrid.compact .citizen{gap:5px;padding:9px 10px;cursor:pointer}
+.cgrid.compact .callout,.cgrid.compact .c-foot,.cgrid.compact .facts span:nth-child(n+3),.cgrid.compact .tags .badge:nth-child(n+3){display:none}
+/* Items that just arrived or changed (a gift, a delivery) are listed first and marked for two minutes */
+.inv .chip.new{background:color-mix(in srgb,var(--accent) 22%,var(--chip));color:var(--ink);font-weight:600}
+.cgrid.compact .c-head b{font-size:14px}
+.cgrid:not(.compact){align-items:stretch}
+/* Citizen table */
+.ctable-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table.ctable{border-collapse:collapse;width:100%;min-width:980px;font-size:13px}
+.ctable th{position:sticky;top:0;background:var(--card);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.ctable td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ctable tr:last-child td{border-bottom:0}
+.ctable tbody tr{cursor:pointer}.ctable tbody tr:hover{background:var(--chip)}
+.ctable .mini{display:grid;grid-template-columns:44px 64px;gap:6px;align-items:center;font-variant-numeric:tabular-nums}
+.ctable .mini .bar{height:6px;margin:0}
+.ctable .who{font-weight:600;white-space:nowrap}
+.ctable .muted{color:var(--muted)}
+.ctable .act{max-width:220px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 0 8px;scroll-margin-top:calc(var(--hud-h,110px) + 8px)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.cols{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:860px){.cols{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.name{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.name b{font-size:16px}
+.role{color:var(--muted);font-size:12px}
+.job{margin:4px 0 6px;font-weight:600}
+.mood{color:var(--muted);font-style:italic;font-size:13px}
+.row{font-size:13px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chip{background:var(--chip);border-radius:999px;padding:1px 8px;font-size:12px}
+.badge{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.night{color:var(--night);border-color:var(--night)}.badge.order{color:var(--warn);border-color:var(--warn)}.badge.bad{color:var(--bad);border-color:var(--bad)}.badge.good{color:var(--accent);border-color:var(--accent)}
+.bar{height:5px;background:var(--chip);border-radius:3px;margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar.warn i{background:var(--warn)}.bar.bad i{background:var(--bad)}
+.meter{display:grid;grid-template-columns:52px 1fr;gap:6px;align-items:center;font-size:12px;color:var(--muted);margin-top:3px}
+.meter .bar{margin:0}
+ul.feed{list-style:none;margin:0;padding:0}
+ul.feed li{padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;overflow-wrap:anywhere}
+ul.feed li:last-child{border-bottom:0}
+.when{color:var(--muted);font-size:12px;margin-right:6px;font-variant-numeric:tabular-nums}
+.who{font-weight:600;margin-right:4px}
+.empty{color:var(--muted);font-size:13px}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
+.convo{max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.msg{border-radius:10px;padding:6px 10px;background:var(--bot);max-width:92%}
+.msg.player{background:var(--me);align-self:flex-end}
+.msg.chronicle{background:transparent;border:1px dashed var(--line);font-style:italic;max-width:100%}
+.msg .head{font-size:12px;color:var(--muted);margin-bottom:2px}
+.msg .heard{font-size:12px;color:var(--muted);border-left:2px solid var(--line);padding-left:6px;margin-bottom:3px}
+form.inline{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+select,input,button{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 9px}
+input{flex:1;min-width:140px}
+button{background:var(--accent);border-color:var(--accent);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+button.bad{background:var(--bad);border-color:var(--bad)}
+.note{font-size:12px;color:var(--muted);margin-top:6px;min-height:1em}
+.ms{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ms:last-child{border-bottom:0}
+.stock{display:flex;flex-wrap:wrap;gap:4px}
+.tabs{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tabs button{background:transparent;color:var(--ink);border-color:var(--line);padding:5px 12px;border-radius:999px;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[hidden],nav[hidden]{display:none}
+table.data{width:100%;border-collapse:collapse;font-size:13px}
+table.data th{text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:5px 6px;white-space:nowrap}
+table.data td{border-bottom:1px solid var(--line);padding:6px;vertical-align:top;overflow-wrap:anywhere}
+.scroll{overflow-x:auto}
+.heat td,.heat th{text-align:center;font-size:12px;padding:4px;min-width:44px}
+.heat th.rowh{text-align:right;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+svg.map,svg.net{width:100%;height:auto;background:var(--chip);border-radius:10px;display:block}
+.export{font-size:15px;padding:9px 16px;font-weight:600;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border-radius:10px;background:var(--accent);color:#fff}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.filters label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:3px}
+.tag{background:var(--chip);border-radius:6px;padding:0 6px;font-size:12px;margin-right:4px;display:inline-block}
+.ms.goal{grid-template-columns:auto 1fr auto}
+/* Citizens toolbar */
+.toolbar{position:sticky;top:var(--hud-h,110px);z-index:4;background:var(--bg);padding:6px 0 8px;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.toolbar input[type=search]{flex:1 1 220px;min-width:180px;padding:5px 10px}
+.toolbar select{padding:5px 8px}
+.qf{display:flex;flex-wrap:wrap;gap:4px}
+.qf button{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px}
+.qf button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.qf button .n{color:var(--muted);margin-left:4px;font-variant-numeric:tabular-nums}
+.qf button[aria-pressed="true"] .n{color:inherit;opacity:.7}
+.count{font-size:12px;color:var(--muted);white-space:nowrap}
+button.link{background:none;border:0;color:var(--accent);padding:0 4px;font-size:12px}
+/* Citizen cards */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:10px;align-items:stretch}
+.citizen{display:flex;flex-direction:column;gap:7px;padding:11px 12px}
+.citizen[data-offline]{opacity:.72}
+.c-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.c-head b{font-size:15px;line-height:1.25}
+.lvl{font-size:11px;padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.act{display:inline-flex;max-width:100%;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--chip);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act.work{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+.act.guard{background:color-mix(in srgb,var(--night) 16%,transparent);color:var(--night)}
+.act.idle{color:var(--muted)}
+.vitals{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
+.vital{font-size:11px;color:var(--muted)}
+.vital .lab{display:flex;justify-content:space-between}
+.vital .lab b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.vital .bar{margin-top:2px;height:6px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.badge.hot{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:600}
+.badge.win{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.callout{font-size:12.5px;font-style:italic;padding:4px 9px;border-radius:8px;background:color-mix(in srgb,var(--accent) 8%,var(--chip));border-left:3px solid var(--accent)}
+.facts{font-size:12px;color:var(--muted);display:grid;gap:1px}
+.facts span{overflow-wrap:anywhere}
+.inv{display:flex;flex-wrap:wrap;gap:3px}
+.inv .chip{font-size:11.5px;padding:0 7px}
+.inv button.chip{border:1px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.c-foot{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-top:7px;border-top:1px solid var(--line)}
+.c-foot button{background:transparent;color:var(--muted);border:1px solid transparent;border-radius:8px;padding:3px 2px;font-size:11.5px;white-space:nowrap}
+.c-foot button:hover{background:var(--chip);color:var(--ink)}
+.c-foot button:disabled{opacity:.4;cursor:default;background:transparent}
+/* Detail drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--card);border-left:1px solid var(--line);z-index:21;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(0,0,0,.18)}
+.scrim[hidden],.drawer[hidden]{display:none}
+.d-head{padding:14px 16px 8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line)}
+.d-head h3{margin:0;font-size:17px}
+.dtabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 16px;border-bottom:1px solid var(--line)}
+.dtabs button{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px;white-space:nowrap}
+.dtabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.d-body{padding:10px 16px 24px;overflow-y:auto;flex:1}
+.entry{padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.entry:last-child{border-bottom:0}
+.datebadge{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:6px;background:var(--ink);color:var(--bg);margin-right:6px;font-variant-numeric:tabular-nums}
+.src{display:inline-block;font-size:11px;padding:0 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:4px;white-space:nowrap}
+.rel{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px;background:var(--chip)}
+.rel.good{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.rel.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.relpills{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:640px){header{position:static}h2{scroll-margin-top:8px}.cluster{border-left:0;padding-left:0}.toolbar{position:static}.vitals{grid-template-columns:1fr}}
+  .milestone-pair{align-items:start}
+  .milestone-list{display:grid;gap:0;margin-top:7px}
+  .milestone-entry{padding:6px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .milestone-entry summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;cursor:pointer;list-style:none}
+  .milestone-entry summary::-webkit-details-marker{display:none}
+  .milestone-entry summary b{font-size:12px;font-weight:600}
+  .milestone-entry .bar{height:3px;margin-top:5px}
+  .milestone-entry .row{margin-top:4px;font-size:11px}
+  .milestone-entry .badge{font-size:10px;padding:1px 5px}
+  .milestone-entry .count{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+  .legacy-milestones{margin-top:10px;font-size:12px}
+
+</style>
+</head>
+<body>
+<header id="top">
+<div class="hud">
+  <h1>SID Settlement</h1>
+  <div class="cluster" role="group" aria-label="Environment and time" id="hudEnv"><span class="pill"><span class="dot"></span>Connecting…</span></div>
+  <div class="cluster" role="group" aria-label="Alerts and events" id="hudAlerts"></div>
+  <div class="cluster" role="group" aria-label="Population and capacity" id="hudPop"></div>
+</div>
+<div class="navbar"><nav class="pages" id="pages" role="tablist" aria-label="Dashboard pages"></nav></div></header>
+<main>
+<div class="tab" id="tab-town">
+<div class="page" data-page="citizens">
+  <section id="citizensSec">
+  <h2 id="citizens">Citizens</h2>
+  <div class="toolbar" role="search" aria-label="Filter citizens">
+    <input type="search" id="cSearch" placeholder="Search name, role, gear or item…" autocomplete="off" aria-label="Search citizens">
+    <div class="qf" id="cQuick" role="group" aria-label="Quick filters"></div>
+    <select id="cSort" aria-label="Sort citizens"><option value="">Town order</option><option value="level">Level (highest)</option><option value="hunger">Hunger (hungriest)</option><option value="energy">Energy (most tired)</option><option value="name">Name (A–Z)</option></select>
+    <span class="seg" role="group" aria-label="Citizen layout" id="cDensity"><button type="button" data-density="compact">Compact</button><button type="button" data-density="cards">Cards</button><button type="button" data-density="table">Table</button></span>
+    <span class="count" id="cCount" aria-live="polite"></span><button class="link" id="cClear" hidden>clear</button>
+  </div>
+  <div class="cgrid" id="agents"></div>
+  </section>
+</div>
+
+<div class="page" data-page="talk" hidden>
+  <h2 id="talk">Conversations</h2>
+  <div class="card">
+    <form class="inline" id="filterForm"><select id="filter"><option value="">Everyone</option></select><label class="row"><input type="checkbox" id="botsOnly" style="flex:none;min-width:0"> bot-to-bot only</label></form>
+    <div class="convo" id="convo" style="margin-top:8px"></div>
+    <form class="inline" id="chatForm"><select id="chatTo"></select><input id="chatText" maxlength="240" placeholder="Say something to a bot…" autocomplete="off"><button>Send</button></form>
+    <form class="inline" id="cmdForm"><input id="cmdText" maxlength="120" placeholder="/sid come scout · /sid stay all · /sid quests" autocomplete="off"><button class="ghost">Run</button></form>
+    <div class="note" id="talkNote"></div>
+  </div>
+
+</div>
+<div class="page" data-page="town" hidden>
+  <h2 id="town">Town</h2>
+  <div class="cols milestone-pair">
+    <div class="card"><b>Daily community milestones</b><div class="row" id="communityDate"></div><div id="communityMilestones" class="milestone-list"></div></div>
+    <div class="card"><b>Daily building milestones</b><div class="row" id="cityDate"></div><div id="cityMilestones" class="milestone-list"></div><details class="legacy-milestones"><summary id="recoveryCount">Existing building recovery</summary><div id="buildingRecovery" class="milestone-list"></div></details><details class="legacy-milestones"><summary>Town foundations &amp; roads</summary><div id="milestones"></div><div class="row" id="roads"></div></details></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>🎣 Pantry &amp; fishing</b><div id="pantry"></div></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>Friendships &amp; rivalries</b><ul class="feed" id="affinity"></ul></div>
+    <div class="card"><b>Conflicts</b><ul class="feed" id="conflicts"></ul></div>
+  </div>
+
+</div>
+<div class="page" data-page="stockroom" hidden>
+  <h2 id="stockroom">📦 Warehouse</h2>
+  <div class="cols">
+    <div class="card"><b>Everything in the warehouse</b><div class="row" id="whNote"></div>
+      <input type="search" id="whFind" placeholder="Find an item (e.g. bread, cobble, gold)" style="margin:6px 0;width:100%;max-width:360px">
+      <div id="whTotals"></div></div>
+  </div>
+  <div class="card" style="margin-top:10px"><b>🛒 The shops</b><div class="row">What Marlo's market and Antoine's bakery have for sale. Overflow from full warehouse chests goes here: food to the bakery, everything else to the market. Right-click Marlo or Antoine in game to buy.</div><div id="whShops"></div></div>
+  <div class="card" style="margin-top:10px"><b>Chest by chest</b><div class="row">Grouped by what each chest is for (each chest carries a floating label in game). "Only:" marks a chest given to one item.</div><div id="whChests"></div></div>
+</div>
+<div class="page" data-page="builds" hidden>
+  <h2 id="builds">🏗 Building</h2>
+  <div class="card"><b>What each building needs</b><div class="row">Every unfinished building, how far along it is and exactly what it is waiting for. When materials are missing, Bram also tells the mayor in chat; drop them in the warehouse drop box.</div><div id="buildNeeds" style="margin-top:6px"></div></div>
+</div>
+<div class="page" data-page="economy" hidden>
+  <h2 id="economy">Market, council &amp; safety</h2>
+  <div class="cols">
+    <div class="card"><b>🛒 Warehouse prices</b><div class="row">Paid to producers per 16 delivered · ↑ scarce · ↓ plentiful</div><div id="prices" class="chips" style="margin-top:6px"></div><div class="row" id="owed"></div></div>
+    <div class="card"><b>🔔 Safety &amp; weather</b><div id="safety"></div></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>🏛 Town council</b><div id="council"></div><div class="note" id="councilNote"></div></div>
+    <div class="card"><b>📐 Master plans</b><div id="masterPlans"></div></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>⚒ Vulcan's forge</b><div id="forge"></div></div>
+    <div class="card"><b>🌿 Rosa's remedies</b><div id="remedies"></div></div>
+    <div class="card"><b>🏃 Barnaby's rounds</b><div id="rounds"></div></div>
+  </div>
+
+</div>
+<div class="page" data-page="plans" hidden>
+  <h2 id="plans">Plans &amp; votes</h2>
+  <div class="cols">
+    <div class="card"><b>Open proposals</b><div id="proposals"></div><div class="note" id="voteNote"></div></div>
+    <div class="card"><b>Rules</b><ul class="feed" id="rules"></ul><b style="display:block;margin-top:10px">Zones</b><ul class="feed" id="zones"></ul></div>
+  </div>
+
+</div>
+<div class="page" data-page="people" hidden>
+  <h2 id="people">People</h2><div class="grid" id="peopleList"></div>
+
+</div>
+<div class="page" data-page="life" hidden>
+  <h2 id="life">Town life</h2>
+  <div class="cols">
+    <div class="card"><b>Gossip</b><ul class="feed" id="gossip"></ul></div>
+    <div class="card"><b>Governor &amp; elections</b><div id="electionBox"></div><div class="note" id="electionNote"></div></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>Pets</b><ul class="feed" id="pets"></ul><b style="display:block;margin-top:10px">Mayor's wishes</b><ul class="feed" id="wishes"></ul></div>
+    <div class="card"><b>Court cases</b><ul class="feed" id="cases"></ul></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>🍻 Evening gatherings</b><ul class="feed" id="gatherings"></ul></div>
+    <div class="card"><b>🗣 Rumors going around</b><ul class="feed" id="rumors"></ul></div>
+  </div>
+
+</div>
+<div class="page" data-page="quests" hidden>
+  <h2 id="quests">Quest board</h2><div class="card"><ul class="feed" id="questList"></ul><div class="row">Hand the items to the bot (right-click with them in your hand, or trade) to collect the reward.</div></div>
+
+</div>
+<div class="page" data-page="chronicle" hidden>
+  <h2 id="chronicle">Chronicle</h2><div class="card"><ul class="feed" id="chron"></ul></div>
+
+</div>
+<div class="page" data-page="justice" hidden>
+  <h2>Court &amp; jail</h2>
+  <div class="cols">
+    <div class="card"><b>⚖️ Cases</b><div class="row" id="jCounts"></div><ul class="feed" id="jCases"></ul></div>
+    <div class="card"><b>🔒 Jail &amp; warrants</b><div id="jJail"></div><b style="display:block;margin-top:10px">Recent verdicts</b><ul class="feed" id="jHistory"></ul></div>
+  </div>
+</div>
+<div class="page" data-page="bank" hidden>
+  <h2>Bank</h2>
+  <div class="card" style="margin-bottom:10px"><b>Mayor funding</b><div class="row">Vault reserves support wages. Warehouse treasury coins support quests and projects. Grants create new coins; transfers move existing money.</div>
+  <form id="bankFund"><select id="fundSource"><option value="warehouse">Treasury → wage reserves</option><option value="donate">My account → wage reserves</option><option value="grant">New Mayor grant → reserves</option><option value="treasury">Reserves → treasury</option><option value="reconcile">Assign verified surplus</option></select>
+  <input id="fundAmount" type="number" min="1" max="4096" step="1" value="64" required aria-label="Emerald amount"><input id="fundMemo" maxlength="120" placeholder="Reason (optional)"><button id="fundSubmit">Add / move funds</button></form><div id="fundMessage" class="row" role="status"></div><details><summary>Recent funding</summary><ul id="fundHistory" class="feed"></ul></details></div>
+  <div class="cols">
+    <div class="card"><b>🏦 Vault, taxes &amp; payroll</b><div id="bVault"></div></div>
+    <div class="card"><b>Accounts</b><ul class="feed" id="bAccounts"></ul></div>
+  </div>
+  <div class="cols" style="margin-top:10px">
+    <div class="card"><b>Pay owed for work</b><div class="chips" id="bOwed"></div></div>
+    <div class="card"><b>Wage rates</b><div class="row">emeralds per unit of work</div><div class="chips" id="bRates"></div></div>
+  </div>
+</div>
+<div class="page" data-page="ledger" hidden>
+  <div class="cols">
+    <section><h2 id="ledger">Ledger</h2><div class="card"><ul class="feed" id="ledgerList"></ul></div></section>
+    <section><h2>Activity</h2><div class="card"><ul class="feed" id="activity"></ul></div></section>
+  </div>
+</div>
+</div>
+
+<div class="tab" id="tab-intel" hidden>
+  <h2>AI models</h2>
+  <div class="card" id="models"><div class="empty">Loading…</div></div>
+  <h2>Intrinsic motivation</h2>
+  <div class="cols">
+    <div class="card"><div class="row">Survival · curiosity · social drives (0-100%). A critical need suspends the citizen's goals until it recovers.</div>
+      <div class="scroll"><table class="data" id="drives" style="margin-top:6px"></table></div></div>
+    <div class="card"><b>Culture: what is spreading</b><div class="row">Recipes, norms and knowledge pass along friendships and fade unless retold.</div><ul class="feed" id="memes"></ul>
+      <details data-key="motEvents"><summary>recent drive decisions</summary><ul class="feed" id="motEvents"></ul></details></div>
+  </div>
+  <h2>Faith &amp; culture</h2>
+  <div class="card"><div id="faithCensus" class="chips"></div><ul class="feed" id="faithLog" style="margin-top:6px"></ul></div>
+  <h2>Work order board</h2>
+  <div class="card">
+    <div class="filters"><label>Status<select id="orderStatus"><option value="active">Active (open, claimed, delivered)</option><option value="">All</option><option>OPEN</option><option>CLAIMED</option><option>DELIVERED</option><option>VERIFIED</option><option>EXPIRED</option><option>CANCELLED</option></select></label><span class="note" id="orderNote"></span></div>
+    <div class="scroll"><table class="data" id="orders"></table></div>
+  </div>
+  <h2>Social trust network</h2>
+  <div class="cols">
+    <div class="card"><svg class="net" id="net" viewBox="0 0 400 400" role="img" aria-label="Trust network between citizens"></svg>
+      <div class="legend"><span><i style="background:var(--accent)"></i>friendly (trust 65+)</span><span><i style="background:var(--bad)"></i>suspicious or hostile</span><span>line width = strength</span></div></div>
+    <div class="card"><b>Trust matrix</b><div class="row">Row sees column: trust / reliability (0-100)</div><div class="scroll"><table class="data heat" id="heat"></table></div>
+      <details data-key="socialEvents"><summary>recent changes</summary><ul class="feed" id="socialEvents"></ul></details></div>
+  </div>
+  <h2>Spatial memory</h2>
+  <div class="cols">
+    <div class="card"><svg class="map" id="map" viewBox="0 0 400 400" role="img" aria-label="Map of remembered resources"></svg><div class="legend" id="mapLegend"></div></div>
+    <div class="card"><b>Ask the town's memory</b>
+      <form class="filters" id="spatialForm" style="margin-top:8px"><label style="flex:1">What<input id="spatialQ" placeholder="iron, wood, food chest, monsters…"></label>
+        <label>Kind<select id="spatialCat"><option value="">any</option><option>ore</option><option>tree</option><option>plant</option><option>farm</option><option>chest</option><option>mob</option><option>structure</option></select></label>
+        <label>Within<select id="spatialRadius"><option value="">anywhere</option><option>32</option><option>64</option><option>128</option></select></label><button>Search</button></form>
+      <ul class="feed" id="spatialHits" style="margin-top:8px"><li class="empty">Search for a resource to see where citizens last saw it (nearest and freshest first, from the square).</li></ul>
+      <div class="row" id="spatialCounts"></div></div>
+  </div>
+  <h2>Goals &amp; plans</h2>
+  <div class="cols">
+    <div class="card"><div id="goals"></div></div>
+    <div class="card"><b>Reflections on failures</b><ul class="feed" id="reflections"></ul></div>
+  </div>
+</div>
+
+<div class="tab" id="tab-minds" hidden>
+  <h2>Live map &amp; minds <span class="when" id="mindsNow"></span></h2>
+  <div class="mapgrid">
+    <div class="card" style="padding:8px"><iframe class="mapframe" id="mapFrame" title="Live 3D map of the town" loading="lazy"></iframe>
+      <div class="row" style="margin-top:6px;font-size:13px">Citizens, buildings, homes, farms and damage are live layers (menu ☰ on the map); "Known resources" shows the trees and ores the citizens remember. <a id="mapLink" target="_blank" rel="noopener">Open the map full screen ↗</a></div></div>
+    <div>
+      <div class="card"><b>Minds</b> <span class="when">a brain pulses while a citizen is thinking - click one to see the thought</span><div id="mindList" style="margin-top:6px"><div class="empty">Loading…</div></div></div>
+      <div class="card" style="margin-top:12px"><b>Stream of thought</b><div id="thoughtFeed" style="margin-top:6px"><div class="empty">No thoughts yet.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="tab" id="tab-convos" hidden>
+  <h2>Settlement conversations</h2>
+  <div class="card">
+    <form class="filters" id="convoForm">
+      <label>Participant<select id="cvWho"><option value="">everyone</option></select></label>
+      <label>From<input type="date" id="cvFrom"></label><label>To<input type="date" id="cvTo"></label>
+      <label style="flex:1">Keyword or tag<input id="cvQ" placeholder="wheat, town hall, carrots…"></label>
+      <button>Filter</button>
+    </form>
+    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><a class="export" id="exportBtn" href="#" download>⬇ Export Conversations to Excel (.xlsx)</a><span class="note" id="cvStats"></span></div>
+  </div>
+  <div class="card" style="margin-top:10px"><ul class="feed" id="cvList"></ul><div style="margin-top:8px"><button class="ghost" id="cvMore" hidden>Load more</button></div></div>
+</div>
+</main>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" hidden>
+  <div class="d-head"><div><h3 id="dTitle"></h3><div class="row" id="dSub"></div></div><button class="ghost" id="dClose" aria-label="Close details">✕</button></div>
+  <div class="dtabs" role="tablist" id="dTabs"></div>
+  <div class="d-body" id="dBody"></div>
+</aside>
+<script>
+const key=new URLSearchParams(location.search).get('key');
+const q=p=>p+(key?(p.includes('?')?'&':'?')+'key='+encodeURIComponent(key):'');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ago=t=>{const s=Math.max(0,Math.round((Date.now()-new Date(t).getTime())/1000));return s<60?s+'s':s<3600?Math.round(s/60)+'m':Math.round(s/3600)+'h';};
+const item=n=>String(n).toLowerCase().replace(/_/g,' ');
+const plain=t=>String(t??'').replace(/§./g,'').trim();
+const MOOD={happy:'😊',grumpy:'😠',scared:'😨',sleepy:'😴',hungry:'🍞',festive:'🎉',alert:'⚔️',calm:''};
+const $=id=>document.getElementById(id);
+function clock(t){if(!Number.isFinite(t))return '';const h=Math.floor(((t/1000)+6)%24),m=Math.floor((t%1000)*0.06);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+function meter(label,value,max){const pct=Math.max(0,Math.min(100,Math.round(100*value/max)));return `<div class="meter"><span>${label}</span><div class="bar ${pct<30?'bad':pct<60?'warn':''}"><i style="width:${pct}%"></i></div></div>`;}
+let last=null;
+// Collapsible sections stay open across refreshes (the page redraws every 5 seconds).
+const openKeys=new Set();
+document.addEventListener('toggle',e=>{const k=e.target.dataset?.key;if(!k)return;if(e.target.open)openKeys.add(k);else openKeys.delete(k);},true);
+function restoreOpen(){document.querySelectorAll('details[data-key]').forEach(d=>{if(openKeys.has(d.dataset.key))d.open=true;});}
+async function post(path,body){
+  const r=await fetch(q(path),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let j={};try{j=await r.json();}catch{}
+  if(!r.ok&&!j.message)j.message=r.status===403?'Wrong or missing dashboard key':'Request failed';
+  return j;
+}
+// ---------- citizens: toolbar, cards, detail drawer ----------
+const tagL=a=>plain(a.tag).toLowerCase();
+const QUICK=[
+  ['free','Free',a=>/\bfree\b/.test(tagL(a))],
+  ['patrol','On patrol',a=>/patrol|guarding/.test(tagL(a))],
+  ['farming','Farming',a=>/farm|harvest|plant/.test(tagL(a))],
+  ['building','Building',a=>!!a.progress||/build|\d+\/\d+/.test(tagL(a))],
+  ['asleep','Asleep',a=>a.resting||/asleep/.test(tagL(a))],
+  ['exhausted','Exhausted / hungry',a=>['exhausted','starving','tired','hungry'].includes(a.feeling)],
+  ['thriving','Thriving',a=>a.feeling==='thriving'],
+  ['offline','Offline',a=>!a.online],
+];
+// Toolbar state is remembered per viewer (a convenience only; the page works without storage).
+const view={q:'',quick:new Set(),sort:''};
+try{const v=JSON.parse(localStorage.getItem('sidCitizenView')||'{}');view.q=v.q||'';view.quick=new Set(v.quick||[]);view.sort=v.sort||'';}catch{}
+const saveView=()=>{try{localStorage.setItem('sidCitizenView',JSON.stringify({q:view.q,quick:[...view.quick],sort:view.sort}));}catch{}};
+const invOpen=new Set();   // citizens whose full inventory is shown
+let density='compact';try{density=localStorage.getItem('sidDensity')||'compact';}catch{}
+// What changed in each citizen's pockets, remembered for two minutes (not on the first look, so a reload marks nothing).
+const invSeen=new Map();
+function invChanges(a){
+  const was=invSeen.get(a.id),now=Date.now(),inv=a.inventory||{};
+  if(!was){invSeen.set(a.id,{counts:{...inv},changed:{}});return new Set();}
+  for(const [k,v] of Object.entries(inv))if(was.counts[k]!==v&&v>(was.counts[k]??0))was.changed[k]=now;
+  was.counts={...inv};
+  for(const [k,t] of Object.entries(was.changed))if(now-t>120000||!inv[k])delete was.changed[k];
+  return new Set(Object.keys(was.changed));
+}
+function citizenRow(a){
+  const inv=Object.entries(a.inventory||{}).sort((x,y)=>y[1]-x[1]).slice(0,3).map(([k,v])=>v+' '+item(k)).join(', ');
+  const mini=(v,max)=>{const pct=Math.max(0,Math.min(100,Math.round(100*v/max)));return `<div class="mini"><span>${Math.round(v)}/${max}</span><div class="bar ${pct<30?'bad':pct<60?'warn':''}"><i style="width:${pct}%"></i></div></div>`;};
+  return `<tr data-row="${esc(a.id)}"${a.online?'':' class="muted"'}><td class="who">${brainFor(a.id)} ${esc(a.name)}</td><td class="muted">${esc(a.role||a.id)} · ${a.level||1}</td>
+    <td><span class="act ${actTone(a)}" title="${esc(plain(a.tag))}">${esc(plain(a.tag)||'—')}</span></td><td>${mini(a.needs?.hunger??20,20)}</td><td>${mini(a.needs?.energy??100,100)}</td>
+    <td class="muted">${esc(a.feeling||'')}${a.affect?` · ${esc(a.affect.word)}`:''}</td><td class="muted">${a.online?`${a.x}, ${a.z}`:'offline'}</td><td class="muted">${esc(inv)||'—'}</td></tr>`;
+}
+function searchText(a){
+  return [a.name,a.id,a.role,a.title,plain(a.tag),a.mood,a.feeling,a.held&&item(a.held),...Object.values(a.armor||{}).map(item),...Object.keys(a.inventory||{}).map(item)].filter(Boolean).join(' ').toLowerCase();
+}
+function visibleAgents(d){
+  const words=view.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const tests=QUICK.filter(([k])=>view.quick.has(k)).map(x=>x[2]);
+  let list=d.agents.filter(a=>{const t=searchText(a);return words.every(w=>t.includes(w))&&(!tests.length||tests.some(fn=>fn(a)));});
+  const by={level:(a,b)=>(b.level||1)-(a.level||1)||(b.xp||0)-(a.xp||0),hunger:(a,b)=>(a.needs?.hunger??20)-(b.needs?.hunger??20),
+    energy:(a,b)=>(a.needs?.energy??100)-(b.needs?.energy??100),name:(a,b)=>String(a.name).localeCompare(String(b.name))}[view.sort];
+  if(by)list=[...list].sort(by);
+  return list;
+}
+function vital(label,value,max){
+  const pct=Math.max(0,Math.min(100,Math.round(100*value/max)));
+  return `<div class="vital"><div class="lab"><span>${label}</span><b>${Math.round(value)}/${max}</b></div><div class="bar ${pct<30?'bad':pct<60?'warn':''}" role="meter" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${Math.round(value)}"><i style="width:${pct}%"></i></div></div>`;
+}
+function actTone(a){const t=tagL(a);return a.role==='guardian'||/patrol|guard/.test(t)?'guard':/\bfree\b|asleep|resting/.test(t)||a.resting?'idle':'work';}
+function renderQuick(d){
+  $('cQuick').innerHTML=QUICK.map(([k,label,fn])=>{const n=d.agents.filter(fn).length,on=view.quick.has(k);
+    return `<button type="button" data-q="${k}" aria-pressed="${on}">${label}<span class="n">${n}</span></button>`;}).join('');
+}
+function citizenCard(a){
+  // Recently changed items first (so a gift shows at once), then the biggest stacks. Compact cards show 4, cards 8;
+  // the rest are always one click away (+N more), never silently hidden.
+  const fresh=invChanges(a);
+  const inv=Object.entries(a.inventory||{}).sort((x,y)=>(fresh.has(y[0])-fresh.has(x[0]))||y[1]-x[1]);
+  const limit=density==='compact'?4:8;
+  const shown=invOpen.has(a.id)?inv:inv.slice(0,limit);
+  const armor=Object.values(a.armor||{}).map(item);
+  const tone=['starving','exhausted'].includes(a.feeling)?'hot':a.feeling==='thriving'?'win':['hungry','tired'].includes(a.feeling)?'order':'';
+  const cond=a.feeling&&a.feeling!=='fine'?`<span class="badge ${tone}">${esc(a.feeling)}</span>`:'';
+  const progress=a.progress?`<div class="bar" title="${a.progress.done}/${a.progress.total}"><i style="width:${Math.round(100*a.progress.done/Math.max(1,a.progress.total))}%"></i></div>`:'';
+  const t=a.talk||{learned:[],threads:[]},rels=Object.keys(a.relationships||{}).length;
+  const tabBtn=(k,icon,label,title,n)=>`<button type="button" data-open="${esc(a.id)}" data-dtab="${k}" title="${title}"${n===0?' disabled':''}>${icon} ${label}${n?' '+n:''}</button>`;
+  const af=a.affect,feel=af?`<span class="badge ${af.stress>=70?'bad':af.morale>=70&&af.stress<40?'good':af.stress>=50||af.morale<35?'order':''}" title="morale ${af.morale} · stress ${af.stress}">💭 ${esc(af.word)} · ${af.morale}/${af.stress}</span>`:'';
+  const rel=a.faith?.religion,faithBadge=rel?.deity_or_faith?`<span class="badge" title="devotion ${Math.round(rel.devotion*100)}%">🕯 ${esc(rel.deity_or_faith.replace(/^the /,''))}</span>`:'';
+  const fo=a.forestry,forestBadge=fo?`<span class="badge good" title="${fo.trees_harvested} felled · ${fo.seeds_replanted} planted · ${fo.total_logs_delivered} logs delivered · now: ${String(fo.state).toLowerCase().replace(/_/g,' ')}">🌲 net ${fo.net_green>=0?'+':''}${fo.net_green} · ${fo.seeds_replanted}/${fo.trees_harvested}</span>`:'';
+  const ki=a.kitchen,kitchenBadge=ki?`<span class="badge good" title="${ki.known} recipes known · now: ${String(ki.state).toLowerCase().replace(/_/g,' ')}${ki.menu?.length?' · menu: '+ki.menu.map(m=>m.dish.toLowerCase().replace(/_/g,' ')+(m.done?' ✓':'')).join(', '):''}">👨‍🍳 mastery ${ki.mastery??0} · ${ki.known} recipes</span>`:'';
+  const tags=feel+cond+faithBadge+forestBadge+kitchenBadge+(a.resting?'<span class="badge night">asleep</span>':'')+(a.order?`<span class="badge order">${esc(a.order.kind)} · ${esc(a.order.player)}</span>`:'')+(a.online?'':'<span class="badge">offline</span>');
+  return `<article class="card citizen" data-id="${esc(a.id)}"${a.online?'':' data-offline'} aria-label="${esc(a.name)}">
+    <div class="c-head"><b title="${esc(a.name)}">${brainFor(a.id)} ${MOOD[a.moodNow]?MOOD[a.moodNow]+' ':''}${esc(a.name)}</b><span class="lvl" title="${a.xp??0} xp">${esc(a.title||'')} ${esc(a.role||'citizen')} · lvl ${a.level||1}</span></div>
+    <div class="c-act"><span class="act ${actTone(a)}" title="${esc(plain(a.tag))}">${esc(plain(a.tag)||'—')}</span>${a.doing?` <span class="when" title="on its own initiative">↳ ${esc(a.doing)}</span>`:''}</div>${progress}
+    <div class="vitals">${vital('Hunger',a.needs?.hunger??20,20)}${vital('Energy',a.needs?.energy??100,100)}${Number.isFinite(a.health)&&a.role==='guardian'?vital('Health',a.health,20):''}</div>
+    ${tags?`<div class="tags">${tags}</div>`:''}
+    ${a.mood?`<div class="callout">feeling ${esc(a.mood)}</div>`:''}
+    <div class="facts">${a.online?`<span>📍 at ${a.x}, ${a.y}, ${a.z}</span>`:''}${a.home?`<span>🏠 ${a.home.built?'home':'home planned'}${Number.isFinite(a.home.x)?` at ${a.home.x}, ${a.home.z}`:''}</span>`:''}${a.held&&a.held!=='NONE'?`<span>🗡 holding ${esc(item(a.held))}</span>`:''}${armor.length?`<span>🛡 wearing ${esc(armor.join(', '))}</span>`:''}</div>
+    ${inv.length?`<div class="inv-row"><div class="inv${invOpen.has(a.id)?' open':''}">${shown.map(([k,v])=>`<span class="chip${fresh.has(k)?' new':''}"${fresh.has(k)?' title="just changed"':''}>${v} ${esc(item(k))}</span>`).join('')}</div>${inv.length>limit?`<button type="button" class="chip" data-inv="${esc(a.id)}" aria-expanded="${invOpen.has(a.id)}">${invOpen.has(a.id)?'show less':`+${inv.length-limit} more`}</button>`:''}</div>`:'<div class="facts"><span>empty-handed</span></div>'}
+    <div class="c-foot">${tabBtn('diary','📔','Diary','Diary',a.diary?.length??0)}${tabBtn('memories','💡','Memo','Memories',t.learned.length+(a.memories?.length??0))}${tabBtn('talks','💬','Talks','Conversations',t.threads.length)}${tabBtn('personality','🧠','Traits','Personality & relationships',rels||(a.personality?undefined:0))}</div>
+  </article>`;
+}
+// Redraws touch only cards whose content changed, and wait while a button is being pressed in the grid,
+// so the 5-second refresh never swallows a click or moves focus.
+let pressing=false,pendingAgents=false;
+const cardHtml=new Map();
+$('agents').addEventListener('pointerdown',()=>{pressing=true;});
+for(const ev of ['pointerup','pointercancel'])document.addEventListener(ev,()=>{if(!pressing)return;pressing=false;if(pendingAgents){pendingAgents=false;setTimeout(()=>last&&renderAgents(last),0);}});
+function renderAgents(d){
+  if(pressing){pendingAgents=true;return;}
+  renderQuick(d);
+  const list=visibleAgents(d),filtered=view.q||view.quick.size,grid=$('agents');
+  grid.classList.toggle('compact',density==='compact');
+  document.querySelectorAll('#cDensity button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.density===density)));
+  if(density==='table'){
+    grid.className='';cardHtml.clear();
+    grid.innerHTML=list.length?`<div class="ctable-wrap"><table class="ctable"><thead><tr><th>Citizen</th><th>Role · lvl</th><th>Doing</th><th>Hunger</th><th>Energy</th><th>Mood</th><th>Where</th><th>Carrying</th></tr></thead><tbody>${list.map(citizenRow).join('')}</tbody></table></div>`:'<div class="empty">No citizen matches these filters.</div>';
+    $('cCount').textContent=filtered?`${list.length} of ${d.agents.length} citizens`:`${d.agents.length} citizens`;$('cClear').hidden=!filtered;renderDrawer();return;
+  }
+  if(!grid.classList.contains('cgrid')){grid.className='cgrid'+(density==='compact'?' compact':'');grid.innerHTML='';}
+  const same=list.length&&grid.children.length===list.length&&list.every((a,i)=>grid.children[i].dataset.id===a.id);
+  if(same)list.forEach((a,i)=>{const h=citizenCard(a);if(cardHtml.get(a.id)!==h){cardHtml.set(a.id,h);grid.children[i].outerHTML=h;}});
+  else{grid.innerHTML=list.length?list.map(a=>{const h=citizenCard(a);cardHtml.set(a.id,h);return h;}).join(''):'<div class="empty">No citizen matches these filters.</div>';}
+  $('cCount').textContent=filtered?`${list.length} of ${d.agents.length} citizens`:`${d.agents.length} citizens`;
+  $('cClear').hidden=!filtered;
+  renderDrawer();
+}
+// Detail drawer: diary, memories, conversations, personality. Stays open and live across refreshes.
+const drawer={id:null,tab:'diary',opener:null};
+const DTABS=[['diary','📔 Diary'],['memories','💡 Memories'],['talks','💬 Conversations'],['personality','🧠 Personality & relationships']];
+function sentiment(note){const n=String(note).toLowerCase();
+  return /distrust|wary|annoy|suspici|resent|angry|dislike|rival|frustrat|irritat|afraid|fear|bitter|jealous/.test(n)?'bad'
+    :/trust|friend|grateful|admir|respect|like|fond|appreciat|kind|reliable|warm|glad|thank|helpful|loyal/.test(n)?'good':'';}
+// Some diary entries were stored as the model's raw JSON ({"diary_entry": "..."}): show just the text.
+function diaryText(t){
+  const s=String(t??'').trim();if(!s.startsWith('{'))return s;
+  try{const j=JSON.parse(s);const v=j.diary_entry??j.entry??j.text??j.diary;if(typeof v==='string')return v;}catch{}
+  return s.match(/"(?:diary_entry|entry|text)"\s*:\s*"((?:[^"\\]|\\.)*)/)?.[1]?.replace(/\\n/g,' ').replace(/\\"/g,'"')??s;
+}
+function drawerBody(a){
+  const t=a.talk||{learned:[],threads:[]};
+  if(drawer.tab==='diary')return a.diary?.length?a.diary.map(e=>`<div class="entry"><span class="datebadge">Day ${e.day}</span>${esc(diaryText(e.text))}</div>`).join(''):'<div class="empty">No diary entries yet.</div>';
+  if(drawer.tab==='memories')return (a.memories?.length?`<div class="entry"><b>Most vivid memories</b></div>${a.memories.map(m=>`<div class="entry">${m.valence>0?'💚':m.valence<0?'⚡':'•'} ${esc(m.text)}${m.day!=null?` <span class="src">day ${m.day}</span>`:''}<span class="src">salience ${m.salience}</span></div>`).join('')}<div class="entry"><b>Learned in conversation</b></div>`:'')+(t.learned.length?t.learned.map(l=>`<div class="entry">💡 ${esc(l.text)} <span class="src">from ${esc(l.from??'?')}</span>${l.day?`<span class="src">day ${l.day}</span>`:''}</div>`).join(''):'<div class="empty">Nothing learned from conversations yet.</div>');
+  if(drawer.tab==='talks')return t.threads.length?t.threads.map(x=>`<div class="entry">💬 <b>${esc(x.with)}</b>: ${esc(x.note)}${x.followUp?`<div style="margin-top:4px"><span class="badge order">open: ${esc(x.followUp)}</span></div>`:''}</div>`).join(''):'<div class="empty">No ongoing conversations.</div>';
+  const rels=Object.entries(a.relationships||{});
+  const vals=a.values?`<div class="entry"><b>Values</b>${Object.entries(a.values).sort((x,y)=>y[1]-x[1]).map(([k,x])=>`<div class="vital" style="margin-top:4px"><div class="lab"><span>${k.replace(/[A-Z]/g,c=>' '+c.toLowerCase())}</span><b>${Math.round(x*100)}</b></div><div class="bar"><i style="width:${Math.round(x*100)}%"></i></div></div>`).join('')}</div>`:'';
+  const fc=a.faith?`<div class="entry"><b>Faith &amp; culture</b><div style="margin-top:3px">${a.faith.religion.deity_or_faith?`🕯 ${esc(a.faith.religion.deity_or_faith)} · devotion ${Math.round(a.faith.religion.devotion*100)}%`:'No faith'} · skepticism ${Math.round(a.faith.religion.skepticism*100)}%${a.faith.religion.converted_at?` · joined ${ago(a.faith.religion.converted_at)} ago`:''}</div>
+    <div class="row">Heritage: ${esc(a.faith.culture.heritage)} · values ${esc(a.faith.culture.core_values.join(', '))} · tradition ${Math.round(a.faith.culture.tradition_adherence*100)}%</div>
+    ${a.faith.hobbies.map(h=>`<div class="vital" style="margin-top:4px"><div class="lab"><span>${esc(h.name)}${h.last_practiced?` <span class="when">${ago(h.last_practiced)} ago</span>`:''}</span><b>${Math.round(h.proficiency*100)}</b></div><div class="bar"><i style="width:${Math.round(h.proficiency*100)}%"></i></div></div>`).join('')}</div>`:'';
+  return vals+fc+`<div class="entry"><b>Core traits</b><div style="margin-top:3px">${esc(a.personality||'—')}</div>${a.mood?`<div class="callout" style="margin-top:8px">feeling ${esc(a.mood)}</div>`:''}</div>`+
+    (rels.length?`<div class="relpills">${rels.map(([k,v])=>{const s=sentiment(v);return `<span class="rel ${s}">${s==='good'?'💚':s==='bad'?'⚡':'•'} ${esc(k)}</span>`;}).join('')}</div>`+
+      rels.map(([k,v])=>`<div class="entry"><span class="rel ${sentiment(v)}">${esc(k)}</span> ${esc(v)}</div>`).join(''):'<div class="empty">No relationships noted yet.</div>');
+}
+function renderDrawer(){
+  if(!drawer.id||!last)return;
+  const a=last.agents.find(x=>x.id===drawer.id);if(!a){closeDrawer();return;}
+  const body=$('dBody'),top=body.scrollTop;
+  $('dTitle').textContent=a.name;
+  $('dSub').textContent=`${a.title||''} ${a.role||'citizen'} · lvl ${a.level||1}`+(plain(a.tag)?' · '+plain(a.tag):'');
+  $('dTabs').innerHTML=DTABS.map(([k,l])=>`<button type="button" role="tab" data-dtab="${k}" aria-selected="${drawer.tab===k}">${l}</button>`).join('');
+  body.innerHTML=drawerBody(a);body.scrollTop=top;
+}
+function openDrawer(id,tab,opener){
+  drawer.id=id;drawer.tab=tab||'diary';drawer.opener=opener?{id,tab:opener.dataset.dtab}:null;
+  $('drawer').hidden=false;$('scrim').hidden=false;$('dBody').scrollTop=0;renderDrawer();$('dClose').focus();
+}
+function closeDrawer(){
+  if(!drawer.id)return;
+  const o=drawer.opener;drawer.id=null;$('drawer').hidden=true;$('scrim').hidden=true;
+  if(o)document.querySelector(`#agents button[data-open="${CSS.escape(o.id)}"][data-dtab="${o.tab}"]`)?.focus();
+}
+$('agents').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-open]');if(b){openDrawer(b.dataset.open,b.dataset.dtab,b);return;}
+  // Compact cards and table rows open the details on a click anywhere.
+  const row=e.target.closest('tr[data-row]');if(row){openDrawer(row.dataset.row,'diary',row);return;}
+  const card=e.target.closest('.compact article[data-id]');if(card&&!e.target.closest('button')){openDrawer(card.dataset.id,'diary',card);return;}
+  const i=e.target.closest('button[data-inv]');
+  if(i){const id=i.dataset.inv;invOpen.has(id)?invOpen.delete(id):invOpen.add(id);if(last)renderAgents(last);document.querySelector(`#agents button[data-inv="${CSS.escape(id)}"]`)?.focus();}
+});
+$('dTabs').addEventListener('click',e=>{const b=e.target.closest('button[data-dtab]');if(!b)return;drawer.tab=b.dataset.dtab;$('dBody').scrollTop=0;renderDrawer();});
+$('dClose').addEventListener('click',closeDrawer);$('scrim').addEventListener('click',closeDrawer);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&drawer.id)closeDrawer();});
+$('cSearch').value=view.q;$('cSort').value=view.sort;
+$('cSearch').addEventListener('input',()=>{view.q=$('cSearch').value.trim();saveView();last&&renderAgents(last);});
+$('cSort').addEventListener('change',()=>{view.sort=$('cSort').value;saveView();last&&renderAgents(last);});
+$('cQuick').addEventListener('click',e=>{const b=e.target.closest('button[data-q]');if(!b)return;const k=b.dataset.q;view.quick.has(k)?view.quick.delete(k):view.quick.add(k);saveView();last&&renderAgents(last);$('cQuick').querySelector(`[data-q="${k}"]`)?.focus();});
+$('cClear').addEventListener('click',()=>{view.q='';view.quick.clear();$('cSearch').value='';saveView();last&&renderAgents(last);});
+// ---------- settlement HUD ----------
+const pill=(html,tone,title)=>`<span class="pill ${tone||''}"${title?` title="${esc(title)}"`:''}>${html}</span>`;
+function renderHud(d){
+  const t=d.town,L=d.life;
+  $('hudEnv').innerHTML=pill(`<span class="dot"></span>live · ${new Date(d.time).toLocaleTimeString()}`,'','Last update')+
+    pill(`Day ${t.day}`)+pill(`${d.night?'🌙':'☀️'} ${esc(t.phase)} ${clock(d.worldTime)}`)+
+    pill(`${{spring:'🌱',summer:'☀️',autumn:'🍂',winter:'❄️'}[L.season]??''} ${esc(L.season)}${L.raining?' · 🌧 rain':''}`)+
+    (t.climate?.drought?pill('🏜 drought','warn'):'');
+  const alerts=[
+    d.lm&&!d.lm.online?pill(`🧠 AI offline since ${new Date(d.lm.since).toLocaleTimeString()} · ${d.lm.queued} waiting`,'bad'):'',
+    t.readiness&&t.readiness!=='green'?pill(t.alert?`🔔 ${esc(t.readiness)} alert`:`🔔 readiness ${esc(t.readiness)}`,t.readiness==='red'?'bad':'warn',t.alert?.reason):'',
+    t.raid?pill('⚔️ Raid!','bad'):'',
+    t.council?.meeting?.start&&!t.council.meeting.decided?pill('🏛 Council in session','warn'):'',
+    t.marketDay?pill('🛒 Market day','good'):'',
+    t.festival?pill(`🎉 ${esc(t.festival.kind)}`,'good'):'',
+    t.meeting?pill('🗣 Morning meeting'):'',
+    L.visitor?pill(`🧳 ${esc(L.visitor.name)}`):'',
+  ].join('');
+  $('hudAlerts').innerHTML=alerts||pill('✓ all quiet','muted');
+  $('hudPop').innerHTML=pill(d.players.length?`👤 Online: ${d.players.map(p=>esc(p.name)).join(', ')}`:'👤 No players online',d.players.length?'good':'muted')+
+    pill(`🏠 Homes ${d.homesBuilt}/${d.homesTotal}`);
+}
+// The header height drives the sticky toolbar and the anchor offsets.
+const hudHeight=()=>{const h=$('top').offsetHeight;if(h)document.documentElement.style.setProperty('--hud-h',h+'px');};
+new ResizeObserver(hudHeight).observe($('top'));hudHeight();
+addEventListener('resize',hudHeight);
+function renderConvo(d){
+  const who=$('filter').value,botsOnly=$('botsOnly').checked,ids=new Set(d.agents.map(a=>a.id));
+  let list=d.conversations.filter(c=>!who||c.from===who||c.to===who);
+  if(botsOnly)list=list.filter(c=>c.kind==='tell'||c.kind==='dialogue'||(c.kind==='chat'&&/^@/.test(c.text)));
+  $('convo').innerHTML=list.length?list.slice(0,120).reverse().map(c=>{
+    const player=c.kind==='player'||!ids.has(c.from);
+    const label=c.kind==='dialogue'?`💬 ${esc(c.from)} → ${esc(c.to)}`:c.kind==='tell'?`${esc(c.from)} → ${esc(c.to)}`:c.kind==='reply'?`${esc(c.from)} → ${esc(c.to)}`:c.kind==='chronicle'?`📜 ${esc(c.from)}'s chronicle`:esc(c.from)+(c.to?` → ${esc(c.to)}`:'');
+    return `<div class="msg ${player?'player':''} ${c.kind==='chronicle'?'chronicle':''}"><div class="head">${label} · ${ago(c.time)}</div>${c.heard?`<div class="heard">${esc(c.heard)}</div>`:''}${esc(c.text)}</div>`;
+  }).join(''):'<div class="empty">No conversations yet.</div>';
+  const box=$('convo');if(box.dataset.stick!=='no')box.scrollTop=box.scrollHeight;
+}
+// Every item still to place: count needed, how many the warehouse (and the builder) has, short ones marked.
+// A small picture of the item (the wiki's inventory icon, cached by the runtime); dropped when there is none.
+const ico=k=>/^[A-Z0-9_]+$/.test(k)?`<img class="ico" src="/icon/${k}.png?v=2" alt="" width="16" height="16" loading="lazy" onerror="this.remove()">`:'';
+function bom(n){
+  const rows=Object.entries(n.remaining||{}).sort((a,b)=>b[1]-a[1]);if(!rows.length)return '';
+  return `<div class="bom"><div class="row">Materials still to place (${rows.reduce((s,[,v])=>s+v,0)} blocks, ${rows.length} kinds):</div><table class="bomt"><tr><th>Item</th><th>Needed</th><th>In stock</th><th></th></tr>${rows.map(([k,v])=>{const h=(n.have||{})[k]??0,short=Math.max(0,v-h);return `<tr class="${short?'short':''}"><td>${ico(k)}${esc(k.toLowerCase().replace(/_/g,' '))}</td><td>${v}</td><td>${h}</td><td>${short?`short ${short}`:'✓'}</td></tr>`;}).join('')}</table></div>`;
+}
+// ---- Warehouse page: totals per item (searchable) and every chest with its contents ----
+let whQuery='';try{whQuery=localStorage.getItem('sidWhFind')||'';}catch{}
+const CAT_LABEL={INPUT_DROP_BOX:'📥 Drop box',FOOD_AND_AGRICULTURE:'🍞 Food & farming',BUILDING_BLOCKS:'🧱 Building blocks',ORES_AND_METALS:'⛏ Ores & metals',TOOLS_AND_EQUIPMENT:'🛠 Tools & equipment',WEAPONS:'⚔ Weapons',REDSTONE_AND_COMPONENTS:'🔴 Redstone',MISC_AND_VALUABLES:'💎 Misc & valuables',OVERFLOW:'📦 Overflow',RETIRED:'🚫 Retired'};
+const CAT_ORDER=Object.keys(CAT_LABEL);
+function renderWarehouse(d){
+  const el=$('whTotals');if(!el)return;
+  const chests=d.warehouse?.chests||[];
+  const nice=k=>k.toLowerCase().replace(/_/g,' ');
+  const q=whQuery.trim().toLowerCase(),match=k=>!q||nice(k).includes(q)||k.toLowerCase().includes(q);
+  const totals={};for(const c of chests)for(const [k,n] of Object.entries(c.items||{}))if(n>0)(totals[k]??={n:0,chests:0}),totals[k].n+=n,totals[k].chests++;
+  const used=chests.reduce((s,c)=>s+((c.size??54)-(c.free??0)),0),slots=chests.reduce((s,c)=>s+(c.size??54),0);
+  $('whNote').textContent=`${Object.keys(totals).length} kinds of goods, ${Object.values(totals).reduce((s,t)=>s+t.n,0)} items in ${chests.length} chests · ${used}/${slots} slots used`;
+  const rows=Object.entries(totals).filter(([k])=>match(k)).sort((a,b)=>b[1].n-a[1].n);
+  const icat=d.warehouse?.itemCategory||{},byCat={};for(const r of rows)(byCat[icat[r[0]]||'MISC_AND_VALUABLES']??=[]).push(r);
+  const chip=([k,t])=>`<span class="chip" title="in ${t.chests} chest${t.chests>1?'s':''}">${ico(k)}${t.n} ${esc(nice(k))}</span>`;
+  el.innerHTML=rows.length?[...CAT_ORDER,...Object.keys(byCat).filter(k=>!CAT_ORDER.includes(k))].filter(k=>byCat[k]).map(k=>`<div style="margin-top:8px"><b>${esc(CAT_LABEL[k]||k)}</b> <span class="when">${byCat[k].length} kind${byCat[k].length>1?'s':''}</span><div class="stock" style="margin-top:3px">${byCat[k].map(chip).join(' ')}</div></div>`).join(''):'<div class="empty">Nothing matches.</div>';
+  const shops=d.warehouse?.market||{};
+  $('whShops').innerHTML=Object.entries(shops).map(([id,sh])=>{const items=Object.entries(sh?.stock?.items||{}).filter(([k,n])=>n>0&&match(k)).sort((a,b)=>b[1]-a[1]);
+    return `<div style="margin-top:8px"><b>${esc(sh.name||id)}</b> <span class="badge ${sh.open?'good':''}">${sh.open?'open':'not set up yet'}</span>${sh.spot?` <span class="when">at ${Math.floor(sh.spot.x)}, ${Math.floor(sh.spot.z)}</span>`:''}
+      <div class="stock" style="margin-top:3px">${items.length?items.map(([k,n])=>`<span class="chip">${ico(k)}${n} ${esc(nice(k))}</span>`).join(' '):'<span class="row">nothing on the shelves</span>'}</div></div>`;}).join('')||'<div class="empty">No shops yet.</div>';
+  const groups={};for(const c of chests)(groups[c.category||'UNASSIGNED']??=[]).push(c);
+  const order=[...CAT_ORDER.filter(k=>groups[k]),...Object.keys(groups).filter(k=>!CAT_ORDER.includes(k))];
+  $('whChests').innerHTML=order.map(cat=>{
+    const list=groups[cat].sort((a,b)=>a.x-b.x||a.z-b.z||a.y-b.y).filter(c=>!q||Object.keys(c.items||{}).some(match));
+    if(!list.length)return '';
+    return `<div style="margin-top:10px"><b>${esc(CAT_LABEL[cat]||cat)}</b> <span class="when">${groups[cat].length} chest${groups[cat].length>1?'s':''}</span><div class="cgrid compact" style="margin-top:4px">${list.map(c=>{
+      const items=Object.entries(c.items||{}).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]);
+      const usedSlots=(c.size??54)-(c.free??0);
+      return `<div class="card" style="padding:7px 9px"><div class="row" style="display:flex;justify-content:space-between;gap:6px"><span>${c.x}, ${c.y}, ${c.z}${c.dedicated?` · <b>Only: ${esc(nice(c.dedicated))}</b>`:''}</span><span class="when">${usedSlots}/${c.size??54} slots</span></div>
+        ${items.length?`<div class="inv" style="margin-top:3px">${items.map(([k,n])=>`<span class="chip"${q&&match(k)?' style="outline:2px solid var(--accent)"':''}>${ico(k)}${n} ${esc(nice(k))}</span>`).join('')}</div>`:'<div class="row">empty</div>'}</div>`;}).join('')}</div></div>`;
+  }).join('')||'<div class="empty">No chest holds that.</div>';
+}
+document.addEventListener('input',e=>{if(e.target.id==='whFind'){whQuery=e.target.value;try{localStorage.setItem('sidWhFind',whQuery);}catch{}if(last)renderWarehouse(last);}});
+function renderBuildNeeds(t){
+  const el=$('buildNeeds');if(!el)return;
+  const list=t.buildNeeds??[],queue=(t.priorityBuilds??[]).filter(x=>!/^demolish:/.test(x));
+  const rows=list.map(n=>{const pct=n.total?Math.round(100*n.placed/n.total):0,items=Object.entries(n.missing||{}).sort((a,b)=>b[1]-a[1]);
+    const tone=items.length?'order':n.status==='building'?'good':'';
+    return `<div class="ms"><span><b>${esc(n.name)}</b> <span class="badge ${tone}">${n.status==='parked'?'set aside':n.status}</span>
+      <div class="bar" title="${n.placed}/${n.total}"><i style="width:${pct}%"></i></div>
+      ${items.length?`<div class="row"><b>Waiting for:</b> ${items.map(([k,v])=>`<span class="chip need">${ico(k)}${v} ${esc(k.toLowerCase().replace(/_/g,' '))}</span>`).join(' ')}</div>`:''}
+      ${bom(n)}
+      ${!items.length&&n.blocker?`<div class="row">${n.blockerKind==='materials'?(n.status==='parked'?'Materials are in; resumes when the current job is done.':''):esc(n.blocker)}</div>`:''}</span><span class="when">${n.placed}/${n.total}</span></div>`;}).join('');
+  el.innerHTML=(rows||'<div class="empty">Nothing under construction right now.</div>')+(queue.length?`<div class="row" style="margin-top:6px">Queued next: ${queue.map(q=>esc(q.replace(/^finish:/,'finish '))).join(', ')}</div>`:'');
+}
+function renderTown(d){
+  const t=d.town;
+  const community=t.community,labels={pending:'Ready',in_progress:'In progress',blocked:'Waiting',review:'Needs inspection',completed:'Completed'};
+  $('communityDate').textContent=community?.date?`${community.date} · ${community.completed}/10 completed · New projects at midnight, America/Chicago`:'Preparing today’s community projects…';
+  const entry=(m,city=false)=>`<details class="milestone-entry" data-milestone="${esc(m.id)}"><summary><b>${m.status==='completed'?'✅':city?'🏗️':m.kind==='garden'?'🌷':'🛠️'} ${esc(m.name)}</b><span class="badge ${m.status==='completed'?'good':''}">${esc(labels[m.status]??m.status)}</span><span class="count">${city?`${m.have}%`:`${m.have}/${m.goal}`}</span></summary><div class="bar"><i style="width:${Math.min(100,Math.round(100*m.have/m.goal))}%"></i></div><div class="row">${esc(city?'Bram the Builder':m.agentName??'Awaiting citizen')} · ${esc(city?m.detail:m.need)}</div>${!city?`<div class="row">${esc(m.benefit)}</div>${m.note?`<div class="row">${esc(m.note)}</div>`:''}`:''}</details>`;
+  const fillMilestones=(id,items,city=false)=>{const el=$(id),open=new Set([...el.querySelectorAll('details[open]')].map(e=>e.dataset.milestone));el.innerHTML=items.map(m=>entry(m,city)).join('');for(const e of el.querySelectorAll('details'))e.open=open.has(e.dataset.milestone);};
+  fillMilestones('communityMilestones',community?.items??[]);
+  const city=t.city;$('cityDate').textContent=city?.date?`${city.date} · ${city.items.filter(m=>m.status==='completed').length}/6 completed · Midnight, America/Chicago${city.backlog?` · ${city.backlog} earlier goals queued`:''}`:'Preparing building projects…';
+  fillMilestones('cityMilestones',city?.items??[],true);
+  const recovery=city?.recovery??[];$('recoveryCount').textContent=`Existing building recovery · ${recovery.filter(r=>r.status==='completed').length}/${recovery.length} inspected`;$('buildingRecovery').innerHTML=recovery.map(r=>`<div class="milestone-entry">${r.status==='completed'?'✅':r.status==='in_progress'?'🔨':'⏳'} ${esc(r.name)} <span class="row">(${esc(r.x)}, ${esc(r.y)}, ${esc(r.z)}) · ${r.status==='completed'?'inspected':r.total?`${esc(r.placed??0)}/${esc(r.total)} work steps`:r.missing==null?'awaiting first inspection':`${esc(r.missing)} missing blocks found`}</span>${r.detail?`<div class="row">${esc(r.detail)}</div>`:''}</div>`).join('');
+  $('milestones').innerHTML=t.milestones.map(m=>`<div class="ms"><span>${m.built?'✅':m.unlocked?'🔨':'🔒'} ${esc(m.name)}<div class="row">${esc(m.need)}</div></span><span class="when">${m.built?'built':m.unlocked?'unlocked':`${m.have}/${m.goal}`}</span><div class="bar" style="grid-column:1/-1"><i style="width:${Math.round(100*m.have/m.goal)}%"></i></div></div>`).join('');
+  try{renderBuildNeeds(t);}catch{}
+  try{renderWarehouse(d);const f=$('whFind');if(f&&f.value!==whQuery&&document.activeElement!==f)f.value=whQuery;}catch{}
+  $('roads').textContent=`Roads: ${t.roads.done}/${t.roads.total} built${t.roads.next?` · next: ${t.roads.next}`:''}${t.buildRequests?.length?` · requested: ${t.buildRequests.join(', ')}`:''}`;
+  $('affinity').innerHTML=t.affinity.length?t.affinity.map(a=>`<li>${a.score>=3?'💚':a.score<=-3?'⚡':a.score>0?'🙂':'😐'} ${esc(a.pair)} <span class="when">${a.score>0?'+':''}${a.score}</span></li>`).join(''):'<li class="empty">Relationships are still forming.</li>';
+  $('conflicts').innerHTML=t.conflicts.length?t.conflicts.map(c=>`<li>${c.resolved?'🤝':'⚠️'} <b>${esc(c.a)}</b> & <b>${esc(c.b)}</b>: ${esc(c.topic)}${c.resolution?`<div class="row">Settled: ${esc(c.resolution)}</div>`:''}</li>`).join(''):'<li class="empty">No disputes. Peaceful town!</li>';
+  const zones=t.zones.filter(z=>z.status!=='rejected');
+  $('zones').innerHTML=zones.map(z=>`<li><b>${esc(z.name)}</b> <span class="badge ${z.status==='adopted'?'good':''}">${esc(z.kind)} · ${esc(z.status)}</span><div class="row">${z.x1},${z.z1} → ${z.x2},${z.z2}</div></li>`).join('');
+  $('questList').innerHTML=t.quests.length?t.quests.map(x=>`<li><span class="badge ${x.status==='open'?'order':x.status==='done'?'good':''}">${esc(x.status)}</span> #${esc(x.id)} <b>${esc(x.by)}</b> needs ${x.count} ${esc(item(x.item))}${x.delivered?` (${x.delivered} delivered)`:''} → ${x.reward.count} ${esc(item(x.reward.item))}${x.note?`<div class="row">${esc(x.note)}</div>`:''}</li>`).join(''):'<li class="empty">The notice board is empty.</li>';
+  $('chron').innerHTML=t.chronicle.length?t.chronicle.map(c=>`<li><span class="who">Day ${c.day}</span>${esc(c.text)}</li>`).join(''):'<li class="empty">The scribe writes a chronicle entry every evening.</li>';
+}
+function renderEconomy(d){
+  const t=d.town,m=t.market;if(!m)return;
+  $('prices').innerHTML=Object.entries(m.prices).map(([k,p])=>`<span class="chip">${esc(item(k))} ${p.factor>=1.4?'↑':p.factor<=0.8?'↓':''} ${(p.value*16*0.25/10).toFixed(1)}💎</span>`).join('');
+  const owed=Object.entries(m.owed||{}).filter(([,v])=>v>0);
+  $('owed').innerHTML=(m.emergency?'<span class="badge bad">food emergency: food pays extra</span> ':'')+(owed.length?'Owed (paid per whole emerald): '+owed.map(([k,v])=>esc(k)+' '+v).join(', '):'');
+  const lvl=t.readiness||'green',tone={green:'good',yellow:'order',red:'bad'}[lvl];
+  const c=t.climate||{};
+  $('safety').innerHTML=`<div class="row"><span class="badge ${tone}">readiness ${esc(lvl)}</span>${t.alert?` <b>${esc(t.alert.level)} alert</b> (${esc(t.alert.reason)}): townsfolk in shelter`:' no alert'}</div>
+    <div class="row">Season: <b>${esc(c.season||'')}</b> · crops grow at <b>${c.growth??100}%</b>${c.drought?` · <span class="badge bad">drought until day ${c.drought.until}</span>`:''}${c.lean?' · lean times: fishing first':''}</div>
+    <div class="row">The guardian rings the bell at dusk when monsters are about; everyone else heads to the nearest shelter until dawn.</div>`;
+  const co=t.council;
+  $('council').innerHTML=(co.meeting?.start&&!co.meeting.decided?`<div class="row"><b>In session!</b> Cast the Mayor's vote (counts 3×):</div><div class="chips">${(co.meeting.candidates||[]).map(x=>`<button class="ghost" data-council="${x.number}">${x.number}. ${esc(x.name)}</button>`).join('')}</div>`
+      :`<div class="row">Next council: day ${co.next} · <button class="ghost" data-council="call">Call a council</button></div>`)+
+    (co.history.length?`<ul class="feed">${co.history.map(h=>`<li>Day ${h.day}: <b>${esc(h.winner?.name??'nothing')}</b> <span class="when">${esc(Object.entries(h.tally||{}).map(([k,v])=>k.replace('site:','')+' '+v).join(', '))}</span><div class="row">pantry ${esc(h.metrics.pantryStatus)} · treasury ${h.metrics.treasury} · threats ${h.metrics.threats}${h.emergency?` · emergency: ${h.emergency.paid} emeralds to food producers`:''}</div></li>`).join('')}</ul>`:'<div class="row">No council held yet.</div>');
+  $('masterPlans').innerHTML=t.plans.progress.map(p=>`<div class="ms"><span>${esc(p.name)}<div class="row">${p.stages.map(s=>(s.done?'✅ ':'▫️ ')+esc(s.name)).join(' · ')}</div></span><span class="when">${p.done}/${p.total}</span><div class="bar" style="grid-column:1/-1"><i style="width:${Math.round(100*p.done/p.total)}%"></i></div></div>`).join('')+
+    (t.plans.funded.length?`<div class="row">Funded, building next: <b>${esc(t.plans.funded.join(', '))}</b></div>`:'<div class="row">Nothing funded; the council decides.</div>');
+  const sp=d.specialists||{},lst=o=>Object.entries(o||{}).filter(([,v])=>v>0).map(([k,v])=>`<span class="chip">${v} ${esc(item(k))}</span>`).join('')||'<span class="row">none</span>';
+  const f=sp.smith;$('forge').innerHTML=f?`<div class="row">${esc(f.status)} · made ${f.made} · handed over ${f.delivered} · left in warehouse ${f.orders}</div>
+    <div class="row"><b>Needs:</b> ${f.needs.length?f.needs.map(n=>`${esc(n.agent)}: ${esc(n.kind.toLowerCase())} (${esc(n.reason)}${n.left!==undefined?', '+n.left+' uses left':''})`).join('; '):'everyone equipped'}</div>
+    <details data-key="wear"><summary>tool wear</summary>${Object.entries(f.wear).map(([a,w])=>`<div class="row"><b>${esc(a)}</b>: ${Object.entries(w).map(([k,v])=>esc(item(k))+' '+v).join(', ')}</div>`).join('')}</details>
+    ${f.history.length?`<ul class="feed">${f.history.map(h=>`<li><span class="when">${ago(h.time)}</span>${esc(item(h.tool))} → ${esc(h.to)}</li>`).join('')}</ul>`:''}`:'<div class="empty">No smith yet.</div>';
+  const h=sp.herbalist;$('remedies').innerHTML=h?`<div class="row">${esc(h.status)} · brewed ${h.brewed} · treated ${h.treated} · gathered ${h.gathered} · herbs ${h.herbs}</div><div class="chips">${lst(h.potions)}</div>
+    <div class="row">Ask for healing in game with <b>/sid heal</b>.</div>${h.history.length?`<ul class="feed">${h.history.map(x=>`<li><span class="when">${ago(x.time)}</span>${esc(item(x.potion))} → ${esc(x.to)}</li>`).join('')}</ul>`:''}`:'<div class="empty">No herbalist yet.</div>';
+  // The clinic (skills/healthcare.mjs): who needs care now, who is in an infirmary bed, the latest records.
+  const hc=d.health;if(hc)$('remedies').innerHTML+=`<div class="row"><b>Clinic</b>${hc.infirmaryBuilt?' · infirmary open':' · infirmary not built yet (Rosa treats people where they are)'} · treated ${hc.stats.treated} · fed ${hc.stats.fed} · admitted ${hc.stats.admitted}</div>`
+    +(hc.cases.length?`<div class="chips">${hc.cases.map(k=>`<span class="chip">${k.kind==='critical'?'🩸':k.kind==='starving'?'🍞':'🩹'} ${esc(k.name)} ${k.kind}</span>`).join('')}</div>`:'<div class="row">Nobody needs care right now.</div>')
+    +(hc.admitted.length?`<div class="row">In bed: ${hc.admitted.map(a=>`${esc(a.name)} (bed ${a.bed})`).join(', ')}</div>`:'')
+    +(hc.records.length?`<ul class="feed">${hc.records.slice(0,5).map(r=>`<li><span class="when">${ago(Date.parse(r.time))}</span>${esc(r.name)}: ${esc(r.kind)}${r.remedy?` · ${esc(item(r.remedy))}`:''}${r.food?` · ${esc(r.food)}`:''}</li>`).join('')}</ul>`:'');
+  const r=sp.courier;$('rounds').innerHTML=r?`<div class="row">${esc(r.status)}${r.lastStop?` · last stop: ${esc(r.lastStop)}`:''}</div>${r.errand?`<div class="row">Errand: ${esc(r.errand.kind)}${r.errand.item?' '+esc(item(r.errand.item)):''}${r.errand.to?' → '+esc(r.errand.to):''}</div>`:''}`:'<div class="empty">No courier yet.</div>';
+}
+function renderPlans(d){
+  $('rules').innerHTML=d.charter.rules.length?d.charter.rules.map(r=>`<li>#${esc(r.id)} ${esc(r.text)} <span class="when">by ${esc(r.by)}</span></li>`).join(''):'<li class="empty">No rules adopted yet.</li>';
+  $('proposals').innerHTML=d.charter.proposals.length?d.charter.proposals.map(p=>`<div class="ms"><span>#${esc(p.id)} ${esc(p.text)}<div class="row">by ${esc(p.by)} · ${p.yes} yes · ${p.no} no</div></span>
+    <span><button data-vote="yes" data-id="${esc(p.id)}">Yes</button> <button class="ghost" data-vote="no" data-id="${esc(p.id)}">No</button> <button class="bad" data-vote="veto" data-id="${esc(p.id)}">Veto</button></span></div>`).join(''):'<div class="empty">Nothing to vote on right now.</div>';
+}
+function renderPantry(d){
+  const f=d.fisher;if(!f){$('pantry').innerHTML='<div class="empty">Finley has not arrived yet.</div>';return;}
+  const p=f.pantry,tone=p.status==='healthy'?'good':p.status==='low'?'order':'bad';
+  const lst=o=>Object.entries(o||{}).filter(([,v])=>v>0).map(([k,v])=>`<span class="chip">${v} ${esc(item(k))}</span>`).join('')||'<span class="row">nothing yet</span>';
+  $('pantry').innerHTML=`<div class="row"><span class="badge ${tone}">pantry ${esc(p.status)}</span> ${p.foodPoints} food points</div><div class="chips">${lst(p.items)}</div>
+    <div class="row" style="margin-top:8px"><b>${esc(f.name)}</b>: ${esc(f.status)}${f.trip?` → ${esc(f.trip.to)}`:''}</div>
+    <div class="row">Caught today:</div><div class="chips">${lst(f.today.caught)}</div>
+    <div class="row">Foraged today:</div><div class="chips">${lst(f.today.foraged)}</div>
+    ${d.town.farms?.plots?`<div class="row" style="margin-top:8px">🌾 <b>Farm plots:</b> ${d.town.farms.plots} (${d.town.farms.cells} farmland) · ${d.town.farms.tiles.map(x=>`${x.crop.toLowerCase()} ${x.x1},${x.z1} ${x.last?ago(x.last)+' ago':'not yet'}`).join(' · ')}</div>`:''}
+    <div class="row">All time: ${f.totals.caught} caught · ${f.totals.foraged} foraged · ${f.totals.delivered} delivered · ${f.totals.trips} trips · ${f.garden} wild plants${f.fishingSpot?` · spot ${Math.floor(f.fishingSpot.x)}, ${Math.floor(f.fishingSpot.z)}`:''}</div>`;
+}
+function renderLife(d){
+  const L=d.life;
+  $('peopleList').innerHTML=L.people.length?L.people.map(p=>`<div class="card"><div class="name"><b>${esc(p.name)}${L.mayor===p.name?' 🎩 Mayor':''}</b><span class="badge ${p.reputation>=15?'good':p.reputation<-5?'bad':''}">${esc(p.standing)} · ${p.reputation}</span></div>
+    ${p.away?`<div class="row"><b>While you were away:</b> ${esc(p.away.text)}</div>`:''}
+    <details data-key="facts:${esc(p.name)}"><summary>what the town remembers (${p.facts.length})</summary>${p.facts.map(f=>`<div class="row">${esc(f.text)} <span class="when">${ago(f.time)}</span></div>`).join('')||'<div class="row">Nothing yet.</div>'}</details></div>`).join(''):'<div class="empty">No players yet.</div>';
+  $('gossip').innerHTML=L.news.length?L.news.map(n=>`<li><span class="when">${ago(n.time)}</span>${esc(n.text)}</li>`).join(''):'<li class="empty">No gossip yet.</li>';
+  const e=L.election;
+  $('electionBox').innerHTML=`<div class="row">Governor: <b>${esc(L.governor??'Governor Elia (founding)')}</b></div>`+
+    (e&&!e.held?`<div class="row">Election today! Endorse a candidate:</div><div class="chips">${e.candidates.map(c=>`<button class="ghost" data-endorse="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:'')+
+    (L.elections.length?`<ul class="feed">${L.elections.map(x=>`<li>Day ${x.day}: <b>${esc(x.winner)}</b> won ${esc(Object.entries(x.tally).map(([k,v])=>k+' '+v).join(', '))}</li>`).join('')}</ul>`:'<div class="row">An election is held every 7th day.</div>');
+  $('pets').innerHTML=L.pets.length?L.pets.map(p=>`<li>${p.kind==='wolf'?'🐕':'🐈'} <b>${esc(p.name)}</b> <span class="when">${esc(p.owner)}'s ${p.kind==='wolf'?'dog':'cat'}</span></li>`).join(''):'<li class="empty">No pets yet.</li>';
+  $('wishes').innerHTML=L.mayorWishes.length?L.mayorWishes.map(w=>`<li>Day ${w.day}: ${esc(w.text)}</li>`).join(''):'<li class="empty">Speak at a morning meeting and the town will remember.</li>';
+  $('cases').innerHTML=L.cases.length?L.cases.map(c=>`<li>⚖️ Day ${c.day}: ${esc(c.thief)} took ${c.amount} emeralds · ${esc(c.status)}${c.fine?' · fined':''}</li>`).join(''):'<li class="empty">No crimes. A peaceful town!</li>';
+}
+function renderJustice(d){
+  const j=d.justice;if(!j)return;
+  // Who presides, and the court in session (with who of the summoned is in the room).
+  const sess=j.session?` · <b>in session</b>: ${esc(j.session.conflict_id)} (${esc(String(j.session.phase).toLowerCase().replace(/_/g,' '))})${Object.keys(j.session.attendance??{}).length?' · '+Object.entries(j.session.attendance).map(([r,a])=>`${a.present?'✅':'⏳'} ${esc(a.name)} <span class="when">${esc(r)}</span>`).join(' '):''}`:'';
+  $('jCounts').innerHTML=`${j.judge?`${esc(j.judge.title)} ${esc(j.judge.name)} presides${j.courthouseBuilt?' at the courthouse':''} · `:''}${j.counts.OPEN} open · ${j.counts.TRIED} tried · ${j.counts.RESOLVED} resolved${sess}`;
+  const icon={OPEN:'⚠️',TRIED:'⚖️',RESOLVED:'🤝'};
+  $('jCases').innerHTML=j.conflicts.length?j.conflicts.map(c=>`<li>${icon[c.status]??''} <b>${esc(c.conflict_id)}</b> ${esc(c.party_a)} v ${esc(c.party_b)}: ${esc(c.reason)} <span class="badge ${c.status==='OPEN'?'order':c.status==='TRIED'?'bad':'good'}">${esc(c.status.toLowerCase())}</span>
+    <div class="row">${esc(c.timestamp.slice(0,16).replace('T',' '))} UTC${c.location?` at ${c.location.x}, ${c.location.z}`:''} · ${c.evidence} evidence${c.complaint?` · complaint by ${esc(c.complaint.by)}`:''}${c.investigation?` · investigation ${esc(c.investigation.status)}`:''}${c.trial&&!c.trial.held?` · trial at ${esc(c.trial.scheduled_at.slice(11,16))} UTC`:''}</div>
+    ${c.verdict?`<div class="row">Verdict: ${esc(c.verdict.verdict??c.verdict.outcome)}${c.verdict.guilty?` (${esc(c.verdict.guilty)})`:''} · ${esc(c.verdict.outcome)}${c.verdict.findings?.[0]?` · ${esc(c.verdict.findings[0])}`:''}</div>`:c.resolution?`<div class="row">${esc(c.resolution)}</div>`:''}
+    ${c.jury?`<div class="row">🧑‍⚖️ Jury: ${c.jury.jurors.map(esc).join(', ')}${c.jury.tally?` · ${c.jury.tally.guilty} guilty, ${c.jury.tally.notGuilty} not guilty${c.jury.tally.abstain?`, ${c.jury.tally.abstain} abstain`:''}${c.jury.tieBreak?' · hung, ruled from the bench':''}`:''}${c.jury.bench?` · ${esc(c.jury.bench)}`:''} <span class="when">${esc(c.jury.reasons.join('; '))}</span></div>`:''}</li>`).join(''):'<li class="empty">No cases.</li>';
+  $('jJail').innerHTML=(j.jail.length?j.jail.map(r=>`<div class="ms"><span>🔒 <b>${esc(r.name)}</b><div class="row">${esc(r.reason)}${r.cell?.stocks?' · in the stocks':` · cell ${r.cell?.cell??'?'}`}</div></span><span class="when">${r.minutesLeft} min left</span></div>`).join(''):'<div class="row">The jail is empty.</div>')
+    +(j.warrants.length?`<div class="row">Warrants: ${j.warrants.map(w=>esc(w.name)).join(', ')}</div>`:'')+(j.jailBuilt?'':'<div class="row">The jail is not built yet: sentences are served in the stocks on the square.</div>')
+    +(j.docket?.length?`<div class="row"><b>Docket</b>: ${j.docket.map(x=>`${esc(x.case_id)} ${esc(x.plaintiff)} v ${esc(x.defendant)} (${esc(x.charge_type)}) at ${esc(x.trial_at.slice(11,16))} UTC`).join(' · ')}</div>`:'')
+    +(j.fines?.length?`<div class="row"><b>Unpaid fines</b>: ${j.fines.map(f=>`${esc(f.debtor)} owes ${f.amount} 💎 to ${esc(f.creditor)} (${esc(f.conflict_id)})`).join(' · ')}</div>`:'');
+  $('jHistory').innerHTML=j.history.length?j.history.map(h=>`<li><span class="when">day ${h.day}</span><b>${esc(h.conflict_id)}</b> ${esc(h.outcome)}${h.guilty?` · ${esc(h.guilty)}`:''}</li>`).join(''):'<li class="empty">No trials yet.</li>';
+}
+let fundBusy=false,fundRequest=null;
+$('fundSource').addEventListener('change',()=>{fundRequest=null;if($('fundSource').value==='reconcile')$('fundAmount').value=Math.max(1,last?.bank?.lastAudit?.diff||1);});
+$('fundAmount').addEventListener('change',()=>{fundRequest=null;});
+$('bankFund').addEventListener('submit',async event=>{
+ event.preventDefault();if(fundBusy)return;fundBusy=true;$('fundSubmit').disabled=true;
+ fundRequest??={source:$('fundSource').value,amount:Number($('fundAmount').value),memo:$('fundMemo').value,opId:window.crypto?.randomUUID?.()||`fund-${Date.now()}-${Math.random().toString(36).slice(2)}`};
+ $('fundMessage').textContent='Verifying funds…';
+ try{const r=await post('/api/bank/fund',fundRequest);$('fundMessage').textContent=r.message;if(r.status==='done'||r.status==='failed')fundRequest=null;}
+ catch(e){$('fundMessage').textContent=`${e.message}. Retry uses the same transaction.`;}
+ finally{fundBusy=false;$('fundSubmit').disabled=!!last?.bank?.funding?.blocked;}
+});
+function renderBank(d){
+  const b=d.bank;if(!b)return;
+  const v=b.vault,a=b.lastAudit,e=b.economy,tc=b.tax_config;
+  $('bVault').innerHTML=`<div class="ms"><span>Tax reserves</span><b>${v.total_tax_reserves} 💎</b></div><div class="ms"><span>Treasury (warehouse)</span><b>${v.treasury_balance} 💎</b></div>
+    <div class="ms"><span>Owed to account holders</span><b>${b.liabilities-v.total_tax_reserves} 💎</b></div>
+    <div class="row">Income tax ${Math.round(tc.income_tax_rate*100)}% · sales tax ${Math.round(tc.sales_tax_rate*100)}% · payroll every ${Math.round(tc.tax_collection_interval_ticks/1200)} min</div>
+    <div class="row">${a?`Last audit ${ago(Date.parse(a.time))}: vault ${a.vault}, books ${a.owed} ${a.ok?'<span class="badge good">balanced</span>':`<span class="badge bad">${a.diff>0?`${a.diff} unassigned surplus`:`${-a.diff} shortfall`}</span>`}`:'No audit yet.'}</div>
+    <div class="row">Minted today: ${e.mintedToday?.count??0} · goods backing new money: ${e.mintable}${e.lastPayroll?` · last payroll ${ago(e.lastPayroll)}`:''}</div>`;
+  $('fundSubmit').disabled=fundBusy||!!b.funding?.blocked;
+  $('fundHistory').innerHTML=(b.funding?.operations??[]).map(o=>`<li>${esc(o.source)} · ${o.credited}/${o.amount} 💎 · ${esc(o.status)}<div class="row">${esc(o.memo||'')} · ${ago(Date.parse(o.time))}</div></li>`).join('')||'<li class="empty">No Mayor funding yet.</li>';
+  if(b.funding?.blocked)$('fundMessage').textContent='An interrupted move needs review before more funding.';
+  const acc=Object.entries(b.accounts).sort((x,y)=>y[1].balance-x[1].balance);
+  $('bAccounts').innerHTML=acc.length?acc.map(([id,x])=>`<li><b>${esc(x.name)}</b> <span class="when">${x.balance} 💎</span>${x.recent?.[0]?`<div class="row">${esc(x.recent[0].type.toLowerCase())} ${x.recent[0].amount} · ${esc(x.recent[0].memo)}</div>`:''}</li>`).join(''):'<li class="empty">No accounts yet.</li>';
+  const owed=Object.entries(e.owed||{}).filter(([,n])=>n>=0.1).sort((x,y)=>y[1]-x[1]);
+  $('bOwed').innerHTML=owed.length?owed.map(([k,n])=>`<span class="chip">${esc(k)} ${n}</span>`).join(''):'<span class="row">Everyone is paid up.</span>';
+  $('bRates').innerHTML=Object.entries(b.wage_rates).map(([k,n])=>`<span class="chip">${esc(k.toLowerCase())} ${n}</span>`).join('');
+}
+function renderLifesim(d){
+  const L=d.lifesim;if(!L)return;
+  $('gatherings').innerHTML=L.gatherings?.length?L.gatherings.map(g=>`<li><span class="when">day ${g.day}</span>${esc(g.place)}: ${g.people.length} came · ${g.rumors} stories told</li>`).join(''):'<li class="empty">The town gathers every evening.</li>';
+  $('rumors').innerHTML=L.rumors?.length?L.rumors.map(r=>`<li>${r.level?'🔥':'💬'} ${esc(r.details)} <span class="badge ${r.veracity<0.5?'bad':r.veracity<0.9?'order':'good'}">${Math.round(r.veracity*100)}% true</span><div class="row">${r.hops} retelling${r.hops===1?'':'s'} · started by ${esc(r.origin_citizen_id)}</div></li>`).join(''):'<li class="empty">No rumors going around.</li>';
+}
+function render(d){
+  last=d;$('top').classList.remove('stale');
+  const t=d.town;
+  renderHud(d);
+  renderAgents(d);renderTown(d);if(d.faith)renderFaith(d.faith);renderEconomy(d);renderPlans(d);renderLife(d);renderPantry(d);renderJustice(d);renderBank(d);renderLifesim(d);restoreOpen();
+  const opts=d.agents.map(a=>`<option value="${esc(a.id)}">${esc(a.id)}</option>`).join('');
+  if($('chatTo').options.length!==d.agents.length){$('chatTo').innerHTML=opts;$('filter').innerHTML='<option value="">Everyone</option>'+opts;}
+  renderConvo(d);
+  $('ledgerList').innerHTML=d.ledger.map(e=>`<li><span class="when">${ago(e.time)}</span><span class="who">${esc(e.by)}</span>${esc(e.text)}</li>`).join('')||'<li class="empty">Nothing recorded yet.</li>';
+  updateBadges(d);
+  $('activity').innerHTML=d.activity.map(e=>`<li><span class="when">${ago(e.time)}</span><span class="who">${esc(e.agent||e.player||'')}</span>${esc(e.summary)}</li>`).join('')||'<li class="empty">Quiet so far.</li>';
+}
+async function refresh(){
+  try{const r=await fetch(q('api/state'),{cache:'no-store'});if(!r.ok)throw 0;render(await r.json());}
+  catch{$('top').classList.add('stale');}
+}
+$('convo').addEventListener('scroll',e=>{const b=e.target;b.dataset.stick=b.scrollHeight-b.scrollTop-b.clientHeight<40?'yes':'no';});
+$('filter').addEventListener('change',()=>last&&renderConvo(last));
+$('botsOnly').addEventListener('change',()=>last&&renderConvo(last));
+$('chatForm').addEventListener('submit',async e=>{e.preventDefault();const text=$('chatText').value.trim();if(!text)return;
+  const r=await post('api/chat',{agent:$('chatTo').value,text});$('talkNote').textContent=r.message||'';if(r.ok){$('chatText').value='';refresh();}});
+$('cmdForm').addEventListener('submit',async e=>{e.preventDefault();const command=$('cmdText').value.trim();if(!command)return;
+  const r=await post('api/command',{command});$('talkNote').textContent=r.message||'';if(r.ok)$('cmdText').value='';});
+$('proposals').addEventListener('click',async e=>{const b=e.target.closest('button[data-vote]');if(!b)return;
+  const v=b.dataset.vote;const r=await post('api/vote',{id:b.dataset.id,vote:v==='yes'?'yes':'no',veto:v==='veto'});$('voteNote').textContent=r.message||'';refresh();});
+$('council').addEventListener('click',async e=>{const b=e.target.closest('button[data-council]');if(!b)return;
+  const r=await post('api/command',{command:'/sid council '+b.dataset.council});$('councilNote').textContent=r.message||'';refresh();});
+$('electionBox').addEventListener('click',async e=>{const b=e.target.closest('button[data-endorse]');if(!b)return;const r=await post('api/endorse',{candidate:b.dataset.endorse});$('electionNote').textContent=r.message||'';});
+// ---------- minds: who is thinking right now, and what they concluded ----------
+let mindsData=null;const openMinds=new Set();
+function brainFor(id){const m=mindsData?.agents?.[id];const on=!!m?.thinking;
+  const tip=on?`Thinking (${m.why??''}) for ${m.for}s`:m?.last?`Last thought ${ago(m.last.at)} ago`:'Not thinking';
+  return `<span class="brain${on?' on':''}" data-brain="${esc(id)}" title="${esc(tip)}" aria-label="${esc(tip)}">🧠</span>`;}
+function gistOf(t){if(!t)return '';if(t.said)return `said “${t.said}”${t.to?` to ${t.to}`:''}`;if(t.error)return `could not think it through (${t.error})`;
+  const act=t.action?`${t.action.type}${t.action.text?`: “${t.action.text}”`:t.action.target?` ${t.action.target}`:''}`:'';return t.plan||t.reflection||act||(t.task?`(${t.task.replace(/_/g,' ')})`:'');}
+function renderMinds(){
+  if(!mindsData||!last)return;
+  const names=Object.fromEntries(last.agents.map(a=>[a.id,a.name]));
+  const ids=Object.keys(mindsData.agents).sort((a,b)=>(mindsData.agents[b].thinking-mindsData.agents[a].thinking)||((mindsData.agents[b].last?.at??0)-(mindsData.agents[a].last?.at??0)));
+  const n=mindsData.thinkingNow.length;$('mindsNow').textContent=n?`· ${n} thinking now`:'· all quiet';
+  $('mindList').innerHTML=ids.map(id=>{const m=mindsData.agents[id],t=m.last;
+    const head=m.thinking?`<span class="bubble">${esc(m.why??'thinking')}<i></i><i></i><i></i></span>`:t?`<span class="when">${ago(t.at)} ago · ${(t.ms/1000).toFixed(1)}s</span>`:'<span class="when">no thoughts yet</span>';
+    const more=t?`<div class="more">${t.reflection?`<div><b>Reflection:</b> ${esc(t.reflection)}</div>`:''}${t.plan?`<div><b>Plan:</b> ${esc(t.plan)}</div>`:''}${t.action?`<div><b>Chose:</b> ${esc(t.action.type)}${t.action.text?` “${esc(t.action.text)}”`:''}${t.action.to?` → ${esc(t.action.to)}`:''}</div>`:''}${t.said?`<div><b>Said:</b> “${esc(t.said)}”</div>`:''}<div class="when">Prompted by ${esc(t.reason??'')} · ${m.thoughts} thoughts this session</div></div>`:'';
+    return `<div class="mind${openMinds.has(id)?' open':''}" data-mind="${esc(id)}"><span class="brain${m.thinking?' on':''}">🧠</span><div style="min-width:0"><span class="who">${esc(names[id]??id)}</span> ${head}<div class="gist">${esc(gistOf(t))}</div>${more}</div></div>`;}).join('');
+  $('thoughtFeed').innerHTML=mindsData.feed.length?mindsData.feed.slice(0,25).map(t=>`<div class="thought"><span class="when">${ago(t.at)} ago</span> <b>${esc(t.name)}</b> <span class="q">(${esc(t.reason??'')})</span> ${esc(gistOf(t))}</div>`).join(''):'<div class="empty">No thoughts yet.</div>';
+}
+async function loadMinds(){
+  try{const r=await fetch(q('api/minds'));if(!r.ok)return;mindsData=await r.json();}catch{return;}
+  // Brains on the citizen cards update in place (no need to redraw the cards).
+  document.querySelectorAll('[data-brain]').forEach(el=>{const m=mindsData.agents[el.dataset.brain];el.classList.toggle('on',!!m?.thinking);
+    el.title=m?.thinking?`Thinking (${m.why??''}) for ${m.for}s`:m?.last?`Last thought ${ago(m.last.at)} ago`:'Not thinking';});
+  if(tab==='minds'){renderMinds();const fr=$('mapFrame');if(!fr.src&&mindsData.map){fr.src=mindsData.map;$('mapLink').href=mindsData.map;}}
+}
+$('mindList').addEventListener('click',e=>{const el=e.target.closest('[data-mind]');if(!el)return;const id=el.dataset.mind;openMinds.has(id)?openMinds.delete(id):openMinds.add(id);renderMinds();});
+setTimeout(loadMinds,0);setInterval(loadMinds,1500);
+// ---------- pages and unread badges ----------
+// Each page remembers what you last saw (per browser). A number counts new entries since then; a dot means
+// something on the page changed. Citizens shows a red count of citizens who need attention.
+const times=list=>(list??[]).map(x=>typeof x==='number'?x:Date.parse(x)).filter(Number.isFinite);
+const PAGES=[
+  {key:'citizens',label:'Citizens',group:'Town'},
+  {key:'talk',label:'Conversations',time:d=>times(d.conversations.map(c=>c.time))},
+  {key:'town',label:'Town',sig:d=>JSON.stringify([d.town.city?.date,d.town.city?.items?.map(m=>[m.id,m.have,m.status]),d.town.community?.date,d.town.community?.items?.map(m=>[m.id,m.have,m.status]),d.town.milestones.map(m=>m.built+''+m.unlocked),d.town.roads.done,d.town.conflicts.filter(c=>!c.resolved).length,d.town.buildRequests])},
+  {key:'stockroom',label:'Warehouse',sig:d=>JSON.stringify(d.warehouse?.categories??{})},
+  {key:'builds',label:'Building',sig:d=>JSON.stringify((d.town.buildNeeds||[]).map(n=>[n.name,n.placed,Object.keys(n.missing||{}).join()]))},
+  {key:'economy',label:'Market & safety',sig:d=>JSON.stringify([d.town.readiness,d.town.alert?.level,d.town.council?.meeting?.start,d.town.plans?.funded,d.town.market?.emergency])},
+  {key:'plans',label:'Plans & votes',group:'Society',sig:d=>JSON.stringify([d.charter.proposals.map(p=>p.id),d.charter.rules.length])},
+  {key:'people',label:'People',sig:d=>JSON.stringify(d.life.people.map(p=>p.facts.length))},
+  {key:'life',label:'Town life',time:d=>times(d.life.news.map(n=>n.time))},
+  {key:'justice',label:'Court',sig:d=>JSON.stringify([d.justice?.conflicts.map(c=>c.conflict_id+c.status),d.justice?.jail.length,d.justice?.warrants.length,d.justice?.docket?.length,d.justice?.session?.phase])},
+  {key:'bank',label:'Bank',group:'Economy',sig:d=>JSON.stringify([d.bank?.economy?.lastPayroll,d.bank?.lastAudit?.time])},
+  {key:'quests',label:'Quests',sig:d=>JSON.stringify((d.quests??[]).map(q=>q.number+q.status))},
+  {key:'chronicle',label:'Chronicle',group:'Records',sig:d=>JSON.stringify([d.town.chronicle.length,d.town.chronicle[0]?.day])},
+  {key:'ledger',label:'Ledger',time:d=>times(d.ledger.map(e=>e.time))},
+  {key:'intel',label:'Intelligence',group:'Analysis',view:true},
+  {key:'convos',label:'Archive',view:true},
+  {key:'minds',label:'🧠 Map & minds',view:true},
+];
+let page='citizens',tab='town',seen={};
+try{seen=JSON.parse(localStorage.getItem('sidSeen')||'{}');}catch{}
+$('pages').innerHTML=PAGES.map(p=>(p.group?`<span class="grp">${p.group}</span>`:'')+`<button type="button" role="tab" data-page="${p.key}" aria-selected="false">${esc(p.label)}<span class="nb" hidden></span></button>`).join('');
+function snapshotOf(p,d){try{if(p.time){const ts=p.time(d);return {time:ts.length?Math.max(...ts):0,ts};}if(p.sig)return {sig:p.sig(d)};}catch{}return null;}
+function setBadge(key,n,attn=false){
+  const b=document.querySelector(`#pages button[data-page="${key}"] .nb`);if(!b)return;
+  b.hidden=!n;b.classList.toggle('dot',n===-1);b.classList.toggle('attn',attn);b.textContent=n>0?(n>99?'99+':String(n)):'';
+  b.parentElement.title=n===-1?'Updated since you last looked':n>0?`${n} new since you last looked`:'';
+}
+function updateBadges(d){
+  for(const p of PAGES){
+    const now=snapshotOf(p,d);if(!now)continue;
+    const was=seen[p.key];
+    if(!was||p.key===page){seen[p.key]=now.ts?{time:now.time}:{sig:now.sig};setBadge(p.key,0);continue;}
+    setBadge(p.key,now.ts?now.ts.filter(t=>t>(was.time??0)).length:(now.sig!==was.sig?-1:0));
+  }
+  const attention=d.agents.filter(a=>['starving','exhausted'].includes(a.feeling)).length;
+  if(page!=='citizens')setBadge('citizens',attention,true);
+  try{localStorage.setItem('sidSeen',JSON.stringify(seen));}catch{}
+}
+function showPage(key){
+  const p=PAGES.find(x=>x.key===key)??PAGES[0];page=p.key;
+  const viewName=p.view?p.key:'town';tab=viewName;
+  for(const t of ['town','intel','convos','minds'])$('tab-'+t).hidden=t!==viewName;
+  document.querySelectorAll('#tab-town .page').forEach(el=>{el.hidden=el.dataset.page!==p.key;});
+  document.querySelectorAll('#pages button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.page===p.key)));
+  try{localStorage.setItem('sidPage',p.key);}catch{}
+  if(location.hash.slice(1)!==p.key)history.replaceState(null,'','#'+p.key);
+  if(viewName!=='town')closeDrawer();
+  scrollTo(0,0);
+  if(viewName==='intel'){loadIntel();loadSpatial();}if(viewName==='convos')loadConvos(true);if(viewName==='minds'){loadMinds();const fr=$('mapFrame');if(!fr.src&&mindsData?.map)fr.src=mindsData.map;}
+  if(last)updateBadges(last);
+}
+$('pages').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b)showPage(b.dataset.page);});
+addEventListener('hashchange',()=>{const k=location.hash.slice(1);if(k&&k!==page&&PAGES.some(p=>p.key===k))showPage(k);});
+$('cDensity').addEventListener('click',e=>{const b=e.target.closest('button[data-density]');if(!b)return;density=b.dataset.density;try{localStorage.setItem('sidDensity',density);}catch{}if(last)renderAgents(last);});
+// ---------- intelligence & economy ----------
+const CAT_COLOR={ore:'#8d6e63',tree:'#2e7d32',plant:'#d81b60',farm:'#f9a825',chest:'#6d4c41',mob:'#c62828',structure:'#546e7a'};
+let intelData=null;
+async function loadIntel(){
+  try{const r=await fetch(q('api/intel'),{cache:'no-store'});if(!r.ok)throw 0;intelData=await r.json();renderIntel();}catch{$('orderNote').textContent='Could not load the intelligence data.';}
+}
+function renderIntel(){
+  const d=intelData;if(!d)return;
+  const f=$('orderStatus').value,orders=d.orders.filter(o=>f==='active'?['OPEN','CLAIMED','DELIVERED'].includes(o.status):!f||o.status===f);
+  const prio={EMERGENCY:'bad',HIGH:'order',MEDIUM:'',LOW:''},st={OPEN:'order',CLAIMED:'night',DELIVERED:'good',VERIFIED:'good',EXPIRED:'',CANCELLED:''};
+  $('orders').innerHTML=orders.length?'<tr><th>#</th><th>Priority</th><th>Type</th><th>Issuer</th><th>What</th><th>Contractor</th><th>Reward</th><th>Status</th><th>Age</th></tr>'+orders.map(o=>{
+    const what=o.order_type==='RESOURCE_REQUEST'?`${o.delivered?o.delivered+'/':''}${o.quantity} ${esc(item(o.target_item))}`:esc(o.note||o.order_type.toLowerCase());
+    return `<tr title="${esc(o.note)}"><td>${o.number}</td><td><span class="badge ${prio[o.priority]}">${esc(o.priority.toLowerCase())}</span></td><td>${esc(o.order_type.replace('_',' ').toLowerCase())}</td><td>${esc(o.issuer)}</td><td>${what}</td><td>${esc(o.contractor??'—')}</td><td>${o.reward_emeralds} 💎${o.upfront_paid?` (${o.upfront_paid} up front)`:''}</td><td><span class="badge ${st[o.status]}">${esc(o.status.toLowerCase())}</span></td><td class="when">${ago(o.created)}</td></tr>`;}).join(''):'<tr><td class="empty">No work orders here.</td></tr>';
+  $('orderNote').textContent=`${d.orders.filter(o=>o.status==='OPEN').length} open · ${d.orders.filter(o=>o.status==='CLAIMED').length} in progress · ${d.orders.filter(o=>o.status==='VERIFIED').length} completed`;
+  renderNetwork(d.social);renderGoals(d.goals);renderModels(d.models,d.attention,d.memoryWrites);renderMotivation(d.motivation);
+  $('reflections').innerHTML=d.reflections.length?d.reflections.map(r=>`<li><span class="when">${ago(r.time)}</span><span class="who">${esc(r.agent)}</span><span class="badge ${r.outcome==='FAILED'?'bad':''}">${esc(r.error_type.replace('Exception',''))}</span> <span class="badge">${esc((r.outcome||'').toLowerCase())}</span>${r.source==='rules'?' <span class="badge">rules</span>':''}<div class="row">${esc(r.error)}</div><div class="row">💭 ${esc(r.reflection)}</div></li>`).join(''):'<li class="empty">No failures to reflect on yet.</li>';
+  $('spatialCounts').textContent='Known: '+(d.spatialCounts.map(c=>`${c.n} ${c.category}`).join(' · ')||'nothing yet');
+}
+function renderFaith(f){
+  if(!f){$('faithCensus').innerHTML='';$('faithLog').innerHTML='';return;}
+  $('faithCensus').innerHTML=Object.entries(f.census).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<span class="chip">${k==='no faith'?'':'🕯 '}${esc(k)}: ${n}</span>`).join('');
+  $('faithLog').innerHTML=f.log.length?f.log.map(e=>`<li><span class="when">${ago(e.time)}</span>${esc(e.text)}</li>`).join(''):'<li class="empty">Sister Maren preaches at dawn; conversions, blessings and festivals appear here.</li>';
+}
+function renderMotivation(m){
+  if(!m){$('drives').innerHTML='<tr><td class="empty">Not available.</td></tr>';return;}
+  const bar=(v,cls)=>{const p=Math.round(100*(v??0));return `<div class="bar ${cls}" title="${p}%" style="margin:0;min-width:56px"><i style="width:${p}%"></i></div><span class="when">${p}%</span>`;};
+  const tone=v=>v>=0.75?'bad':v>=0.35?'warn':'';
+  $('drives').innerHTML='<tr><th>Citizen</th><th>Survival</th><th>Curiosity</th><th>Social</th><th>Body</th><th>Now</th></tr>'+m.agents.map(a=>a.offline?`<tr><td>${esc(a.name)}</td><td colspan="5" class="when">offline</td></tr>`:
+    `<tr><td><b>${esc(a.name)}</b><div class="when">${esc(a.role||'')} · strongest: ${esc(a.dominant)}</div></td><td>${bar(a.D.survival,tone(a.D.survival))}</td><td>${bar(a.D.curiosity,'')}</td><td>${bar(a.D.social,'')}</td>
+    <td class="when">❤ ${Math.round(a.vector.health)} 🍞 ${Math.round(a.vector.hunger)} ⚡ ${Math.round(a.vector.energy)}${a.vector.threat>0?` ⚔ ${Math.round(a.vector.threat*100)}%`:''}</td>
+    <td>${a.mode?`<span class="badge bad">survival: ${esc(a.need)}${a.nap?' (napping)':''}</span>`:''}${a.driveGoal?`<div>▶ ${esc(a.driveGoal)}</div>`:''}${a.suspended.length?`<div class="when">⏸ on hold: ${esc(a.suspended.join(', '))}</div>`:''}
+      ${a.peers.length?`<div class="when">worried about ${a.peers.map(p=>esc(p.id)).join(', ')}</div>`:''}${a.stimuli.length?`<div class="when">curious: ${a.stimuli.map(s=>esc(item(s))).join(', ')}</div>`:''}${!a.mode&&!a.driveGoal&&!a.suspended.length&&!a.peers.length&&!a.stimuli.length?'<span class="when">—</span>':''}</td></tr>`).join('');
+  $('memes').innerHTML=m.memes.length?m.memes.map(x=>`<li><span class="badge ${x.kind==='norm'?'order':x.kind==='recipe'?'good':''}">${esc(x.kind)}</span> ${esc(x.content)} <span class="when">${x.holders} ${x.holders===1?'holder':'holders'} · strength ${x.strength}${x.origin?` · from ${esc(x.origin)}`:''}</span></li>`).join(''):'<li class="empty">Nothing has spread yet. Recipes, charter rules and things learned in conversation start here.</li>';
+  $('motEvents').innerHTML=m.events.length?m.events.map(e=>`<li><span class="when">${ago(e.time)}</span><span class="who">${esc(e.name)}</span><span class="badge ${e.drive==='survival'?'bad':e.drive==='social'?'good':''}">${esc(e.drive)}</span> ${esc(e.kind.replace(/_/g,' '))}<div class="row">${esc(e.detail)}</div></li>`).join(''):'<li class="empty">No drive decisions yet.</li>';
+}
+function renderModels(m,att,writes){
+  if(!m){$('models').innerHTML='';return;}
+  const modes={teamwork:['good','Teamwork: both models online, sharing the load and checking each other'],'solo:primary':['order','Solo: only Muse Glimmer (main PC) is online'],
+    'solo:offload':['order','Solo: only Gemma (Omarchy) is online'],offline:['bad','Offline: no model server reachable - the town keeps working without thinking'],fixed:['','Both online, fixed routing (teamwork switched off)']};
+  const [tone,text]=modes[m.mode]??['',m.mode];
+  const sec=ms=>ms==null?'—':ms<1000?ms+' ms':(ms/1000).toFixed(1)+' s';
+  const row=(label,e)=>`<tr><td><b>${label}</b><div class="row">${esc(e.model)}</div></td><td><span class="badge ${e.online?'good':'bad'}">${e.online?'online':'offline'}</span></td>
+    <td>${e.busy}/${e.slots} busy${e.waiting?`, ${e.waiting} waiting`:''}</td><td>${['plan','talk','utility'].map(c=>`${c} ${sec(e.latencyMs[c])}`).join('<br>')}</td>
+    <td>${Object.entries(e.served).map(([c,n])=>`${n} ${c}`).join(', ')||'—'}${Object.values(e.failed).some(Boolean)?`<div class="row">failed: ${Object.entries(e.failed).map(([c,n])=>`${n} ${c}`).join(', ')}</div>`:''}</td></tr>`;
+  $('models').innerHTML=`<div class="row"><span class="badge ${tone}">${esc(m.mode)}</span> ${esc(text)}</div>
+    <div class="scroll"><table class="data" style="margin-top:8px"><tr><th>Model</th><th>Status</th><th>Load</th><th>Avg response</th><th>Served</th></tr>${row('Muse Glimmer (primary)',m.primary)}${row('Gemma (offload)',m.offload)}</table></div>
+    <div class="chips" style="margin-top:8px"><span class="chip">↔ ${m.spillovers} load shares</span><span class="chip">🔧 ${m.repairs} answers repaired</span><span class="chip">🔍 ${m.reviews} plans reviewed</span><span class="chip">⬆ ${m.escalations} escalations</span></div>`+
+    (att?`<div class="row" style="margin-top:8px">🧠 Planning calls in the last ${att.minutes} min: <b>${Object.values(att.thinks).reduce((a,b)=>a+b,0)}</b> (${Object.entries(att.thinks).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`${n} ${esc(k)}`).join(', ')||'none yet'}) · ${att.skipped} checks needed no model${writes!=null?` · ${writes} state saves`:''}</div>`:'');
+}
+function renderNetwork(soc){
+  const ids=soc.agents,n=ids.length,cx=200,cy=200,R=150,pos={};
+  ids.forEach((a,i)=>{const t=2*Math.PI*i/n-Math.PI/2;pos[a.id]={x:cx+R*Math.cos(t),y:cy+R*Math.sin(t)};});
+  const pair=new Map();for(const r of soc.matrix){const k=[r.source_agent,r.target_agent].sort().join('|');const p=pair.get(k)??{a:r.source_agent,b:r.target_agent,t:[]};p.t.push(r.trust_score);pair.set(k,p);}
+  let edges='';
+  for(const p of pair.values()){const t=p.t.reduce((a,b)=>a+b,0)/p.t.length;if(t>=40&&t<65||!pos[p.a]||!pos[p.b])continue;
+    const good=t>=65,w=Math.max(1,Math.min(6,Math.abs(t-50)/6));
+    edges+=`<line x1="${pos[p.a].x}" y1="${pos[p.a].y}" x2="${pos[p.b].x}" y2="${pos[p.b].y}" stroke="${good?'var(--accent)':'var(--bad)'}" stroke-width="${w}" stroke-opacity=".7"><title>${esc(p.a)} & ${esc(p.b)}: trust ${Math.round(t)}</title></line>`;}
+  const nodes=ids.map(a=>`<g><circle cx="${pos[a.id].x}" cy="${pos[a.id].y}" r="16" fill="var(--card)" stroke="var(--line)"/><text x="${pos[a.id].x}" y="${pos[a.id].y+30}" text-anchor="middle" font-size="11" fill="var(--ink)">${esc(a.name)}</text><text x="${pos[a.id].x}" y="${pos[a.id].y+4}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(a.name[0])}</text></g>`).join('');
+  $('net').innerHTML=edges+nodes;
+  const cell=(s,t)=>{const r=soc.matrix.find(m=>m.source_agent===s&&m.target_agent===t);if(s===t)return '<td>—</td>';const tr=r?.trust_score??50,re=r?.reliability_score??50;
+    const hue=tr>=50?140:0,alpha=Math.min(.55,Math.abs(tr-50)/80);return `<td style="background:hsla(${hue},55%,45%,${alpha})" title="${esc(r?.affinity_label??'NEUTRAL')}">${Math.round(tr)}/${Math.round(re)}</td>`;};
+  $('heat').innerHTML='<tr><th></th>'+ids.map(a=>`<th>${esc(a.name.split(' ').pop())}</th>`).join('')+'</tr>'+ids.map(s=>`<tr><th class="rowh">${esc(s.name)}</th>${ids.map(t=>cell(s.id,t.id)).join('')}</tr>`).join('');
+  $('socialEvents').innerHTML=soc.events.map(e=>`<li><span class="when">${ago(e.time)}</span><b>${esc(e.source_agent)}</b> → <b>${esc(e.target_agent)}</b>: ${esc(e.kind.replace(/_/g,' '))} <span class="when">trust ${e.trust_delta>0?'+':''}${e.trust_delta}, reliability ${e.reliability_delta>0?'+':''}${e.reliability_delta}</span>${e.note?`<div class="row">${esc(e.note)}</div>`:''}</li>`).join('')||'<li class="empty">No changes yet.</li>';
+}
+function renderGoals(list){
+  const icon={COMPLETED:'✅',IN_PROGRESS:'▶️',PAUSED:'⏸',SUSPENDED:'⏯',FAILED:'❌',PENDING:'▫️'};
+  $('goals').innerHTML=list.length?list.slice(0,12).map(g=>`<div class="ms goal" style="grid-template-columns:auto 1fr auto"><span>${icon[g.status]??''}</span><span><b>${esc(g.agent)}</b>: ${esc(g.title)}<div class="row">${g.milestones.map(m=>`${icon[m.status]??''} ${esc(m.title)}${m.status==='IN_PROGRESS'||m.status==='PAUSED'?` <i>(${esc(m.spec?.state?.step??m.status.toLowerCase())})</i>`:''}`).join('<br>')||'planning…'}</div>${g.failure?`<div class="row">⚠ ${esc(g.failure)}</div>`:''}</span><span class="when">${ago(g.created)}</span></div>`).join(''):'<div class="empty">No goals yet. Citizens set them themselves, or use /sid goal &lt;citizen&gt; &lt;objective&gt;.</div>';
+}
+async function loadSpatial(e){
+  e?.preventDefault();
+  const params=new URLSearchParams();if($('spatialQ').value)params.set('q',$('spatialQ').value);if($('spatialCat').value)params.set('category',$('spatialCat').value);if($('spatialRadius').value)params.set('radius',$('spatialRadius').value);
+  try{
+    const r=await fetch(q('api/intel/spatial?'+params),{cache:'no-store'});const d=await r.json();
+    if(e||$('spatialQ').value||$('spatialCat').value)$('spatialHits').innerHTML=d.hits.length?d.hits.map(h=>`<li><span class="badge" style="border-color:${CAT_COLOR[h.category]};color:${CAT_COLOR[h.category]}">${esc(h.category)}</span> ${esc(h.summary)}<div class="row">${h.distance} blocks from the square · seen ${h.age_minutes} min ago by ${esc(h.observed_by)}${h.seen>1?` · ${h.seen}× sightings`:''}</div></li>`).join(''):'<li class="empty">Nobody remembers seeing that.</li>';
+    renderMap(d,new Set(d.hits.map(h=>h.memory_id)));
+  }catch{}
+}
+function renderMap(d,hit){
+  const pts=[...d.all,...d.agents];if(!pts.length){$('map').innerHTML='';return;}
+  let x0=Math.min(222,...pts.map(p=>p.x)),x1=Math.max(322,...pts.map(p=>p.x)),z0=Math.min(46,...pts.map(p=>p.z)),z1=Math.max(146,...pts.map(p=>p.z));
+  const span=Math.max(x1-x0,z1-z0)+10,sx=x=>(x-x0+5)/span*400,sz=z=>(z-z0+5)/span*400;
+  const cx=sx(272.5),cz=sz(96.5),rr=48/span*400;
+  const mem=d.all.map(m=>`<circle cx="${sx(m.x)}" cy="${sz(m.z)}" r="${hit.has(m.memory_id)?6:3}" fill="${CAT_COLOR[m.category]??'#888'}" ${hit.has(m.memory_id)?'stroke="var(--ink)" stroke-width="2"':'fill-opacity=".75"'}><title>${esc(m.text_summary)}</title></circle>`).join('');
+  const ag=d.agents.map(a=>`<g><rect x="${sx(a.x)-4}" y="${sz(a.z)-4}" width="8" height="8" fill="var(--ink)"><title>${esc(a.name)}</title></rect></g>`).join('');
+  $('map').innerHTML=`<circle cx="${cx}" cy="${cz}" r="${rr}" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/><text x="${cx}" y="${cz-rr-4}" text-anchor="middle" font-size="10" fill="var(--muted)">town area</text>${mem}${ag}`;
+  $('mapLegend').innerHTML=Object.entries(CAT_COLOR).map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('')+'<span>■ citizens</span>';
+}
+$('orderStatus').addEventListener('change',renderIntel);
+$('spatialForm').addEventListener('submit',loadSpatial);
+// ---------- settlement conversations ----------
+let cvOffset=0;const transcripts=new Map();
+function cvParams(){const p=new URLSearchParams();for(const [k,id] of [['participant','cvWho'],['from','cvFrom'],['to','cvTo'],['q','cvQ']])if($(id).value)p.set(k,$(id).value);return p;}
+function updateExport(){$('exportBtn').href=q('api/conversations/export/xlsx'+(cvParams().toString()?'?'+cvParams():''));}
+async function loadConvos(reset){
+  if(reset){cvOffset=0;}
+  const p=cvParams();p.set('limit','40');p.set('offset',String(cvOffset));updateExport();
+  try{
+    const r=await fetch(q('api/conversations?'+p),{cache:'no-store'});const d=await r.json();
+    const who=$('cvWho'),cur=who.value;
+    if(who.options.length-1!==d.people.length)who.innerHTML='<option value="">everyone</option>'+d.people.map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
+    const html=d.conversations.map(c=>`<li><span class="when">${new Date(c.timestamp).toLocaleString()}</span> <b>${esc(c.participants.join(', '))}</b>${c.location?` <span class="when">@ ${c.location.join(', ')}</span>`:''}
+      <div>${esc(c.summary)}</div><div style="margin-top:3px">${c.topic_tags.map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
+      <details data-key="cv:${c.conversation_id}" data-id="${c.conversation_id}"><summary>transcript (${c.lines} lines)</summary><div class="convo" style="max-height:300px;margin-top:6px">${transcripts.get(c.conversation_id)??'<div class="empty">Loading…</div>'}</div></details></li>`).join('');
+    if(reset)$('cvList').innerHTML=html||'<li class="empty">No conversations match. Conversations are archived once they end (30 s of silence, or when people walk apart).</li>';else $('cvList').insertAdjacentHTML('beforeend',html);
+    cvOffset+=d.conversations.length;$('cvMore').hidden=cvOffset>=d.total;
+    $('cvStats').textContent=`${d.total} matching · ${d.stats.archived} archived · ${d.stats.queued} waiting for a summary · ${d.stats.open} in progress`;
+    restoreOpen();document.querySelectorAll('#cvList details[open]').forEach(loadTranscript);
+  }catch{$('cvStats').textContent='Could not load conversations.';}
+}
+async function loadTranscript(det){
+  const id=det.dataset.id;if(!id)return;
+  if(!transcripts.has(id)){try{const c=await (await fetch(q('api/conversations/'+id),{cache:'no-store'})).json();
+    transcripts.set(id,c.transcript.map(m=>`<div class="msg"><div class="head">${esc(m.speaker)} · ${new Date(m.timestamp).toLocaleTimeString()}</div>${esc(m.message)}</div>`).join(''));}catch{return;}}
+  det.querySelector('.convo').innerHTML=transcripts.get(id);
+}
+$('cvList').addEventListener('toggle',e=>{if(e.target.matches('details[data-id]')&&e.target.open)loadTranscript(e.target);},true);
+$('convoForm').addEventListener('submit',e=>{e.preventDefault();loadConvos(true);});
+for(const id of ['cvWho','cvFrom','cvTo','cvQ'])$(id).addEventListener('change',updateExport);
+$('cvMore').addEventListener('click',()=>loadConvos(false));
+updateExport();
+let saved='citizens';try{saved=localStorage.getItem('sidPage')||'citizens';}catch{}
+showPage(PAGES.some(p=>p.key===location.hash.slice(1))?location.hash.slice(1):saved);
+refresh();setInterval(refresh,5000);
+setInterval(()=>{if(tab==='intel')loadIntel();},10000);
+setInterval(()=>{if(tab==='intel')loadSpatial();if(tab==='convos'&&!document.querySelector('#cvList details[open]'))loadConvos(true);},30000);
+</script>
+</body>
+</html>

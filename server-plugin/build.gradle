@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.1.0'
+}
+group = 'local.sid'
+version = '2.32.0'
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://maven.citizensnpcs.co/repo' }
+    maven { url = 'https://repo.bluecolored.de/releases' }
+}
+dependencies {
+    compileOnly "io.papermc.paper:paper-api:${findProperty('paperApi') ?: '26.2.build.129-stable'}"
+    compileOnly("net.citizensnpcs:citizens-main:${findProperty('citizensVersion') ?: '2.0.44-SNAPSHOT'}") { transitive = false }
+    compileOnly 'de.bluecolored:bluemap-api:2.7.7'
+    compileOnly files('libs/Sentinel-2.9.4-SNAPSHOT-b534.jar')
+    implementation 'org.java-websocket:Java-WebSocket:1.6.0'
+    implementation 'com.google.code.gson:gson:2.13.2'
+}
+java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = (findProperty('javaRelease') ?: '25') as Integer
+    options.compilerArgs += ['-Xlint:deprecation']
+}
+shadowJar {
+    archiveClassifier = ''
+    relocate 'org.java_websocket', 'local.sid.shaded.websocket'
+    relocate 'com.google.gson', 'local.sid.shaded.gson'
+    dependencies { exclude(dependency('org.slf4j:.*:.*')) }
+}
+build.dependsOn shadowJar
+
+// Policy checks use a standalone Java entry point and require no test framework downloads.
+test { failOnNoDiscoveredTests = false }
+tasks.register('doorPolicyTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'local.sid.DoorTimingTest'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+check.dependsOn doorPolicyTest
+tasks.register('terrainPlacementTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'local.sid.TerrainPlacementTest'
+}
+check.dependsOn terrainPlacementTest

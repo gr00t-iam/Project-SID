@@ -1,0 +1,6 @@
+name: ProjectSidBridge
+version: 1.0.0
+main: com.projectsid.bridge.ProjectSidBridge
+api-version: 1.20
+author: sid
+description: WebSocket bridge for autonomous agents

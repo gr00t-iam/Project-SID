@@ -1,0 +1,7 @@
+[Unit]
+Description=Backup of the SID agent state: memory.json + SQLite (VACUUM INTO, integrity-checked) + logs + config (keeps 28)
+
+[Service]
+Type=oneshot
+Environment=STATE_DIR=/var/lib/sid-local APP_DIR=/opt/sid-local
+ExecStart=/usr/bin/node /opt/sid-local/scripts/backup-state.mjs --dest /root/sid-backups --keep 28

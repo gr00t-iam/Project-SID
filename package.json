@@ -1,0 +1,27 @@
+{
+  "name": "sid-local",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file=config/runtime.env agent-core/main.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --env-file=config/runtime.env scripts/check.mjs",
+    "verify": "node --env-file=config/runtime.env scripts/verify-spawn.mjs",
+    "test:offload": "node --env-file=config/runtime.env scripts/test-offload-llm.mjs",
+    "bench": "node --env-file=config/runtime.env scripts/benchmark-4090.mjs",
+    "simulate:motivation": "node scripts/simulate-motivation.mjs",
+    "simulate:faith": "node scripts/simulate-faith.mjs",
+    "simulate:lumberjack": "node scripts/simulate-lumberjack.mjs",
+    "simulate:chef": "node scripts/simulate-chef.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "exceljs": "4.4.0",
+    "rcon-client": "4.2.5",
+    "ws": "8.21.3"
+  }
+}

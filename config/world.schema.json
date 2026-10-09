@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "type",
+    "seq",
+    "time",
+    "agents"
+  ],
+  "properties": {
+    "type": {
+      "const": "snapshot"
+    },
+    "seq": {
+      "type": "integer"
+    },
+    "time": {
+      "type": "integer"
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "uuid",
+          "world",
+          "x",
+          "y",
+          "z",
+          "health",
+          "entities",
+          "blocks"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "world": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "z": {
+            "type": "number"
+          },
+          "health": {
+            "type": "number"
+          },
+          "pathing": {
+            "type": "boolean"
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "uuid",
+                "type",
+                "x",
+                "y",
+                "z"
+              ],
+              "properties": {
+                "uuid": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                },
+                "z": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "x",
+                "y",
+                "z"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "x": {
+                  "type": "integer"
+                },
+                "y": {
+                  "type": "integer"
+                },
+                "z": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "navigation": {
+            "type": "object",
+            "description": "Long-distance travel in progress (plugin 2.2+): status loading|moving|arrived|blocked|chunk_error|world_changed and the destination",
+            "properties": {
+              "status": {
+                "type": "string"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "z": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

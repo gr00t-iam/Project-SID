@@ -1,0 +1,25 @@
+name: SIDLocal
+version: 2.32.0
+main: local.sid.SIDLocal
+api-version: '1.20.6'
+depend: [Citizens]
+softdepend: [BlueMap, Chunky, Sentinel]
+description: Local multi-agent NPC bridge with authenticated WebSocket control
+commands:
+  sidlocal:
+    description: Reload SIDLocal config (materials, zones, limits)
+    usage: /sidlocal reload
+    permission: sidlocal.admin
+  coords:
+    description: Where everyone is (console) / show or hide your coordinates line (in game)
+    usage: /coords
+    permission: sidlocal.use
+  sid:
+    description: Talk to and direct the SID agents
+    usage: /sid help
+    permission: sidlocal.use
+permissions:
+  sidlocal.admin:
+    default: op
+  sidlocal.use:
+    default: true

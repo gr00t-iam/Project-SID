@@ -1,0 +1,6 @@
+[Unit]
+Description=Nightly backup of the SID Minecraft world (keeps 7)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/sbin/sid-backup-world

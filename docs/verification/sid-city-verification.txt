@@ -1,0 +1,17 @@
+SID city update - October 9, 2026
+
+Live deployment: Node runtime on LXC 119; SIDLocal plugin 2.30.1 on the Minecraft server.
+
+Daily boards: 10 community goals and 6 building goals per America/Chicago calendar date; restart-stable, DST-aware real-world midnight rollover. Compact cards sit side by side, with expandable details and unfinished work retained.
+
+Percy Wobblefoot, nickname Tipsy: live NPC and dashboard citizen, warm boastful personality, witnessed public disturbances, existing sheriff/court processing, short 60-180 second sentences and 20-45 minute sober cooldown. Percy answered the live introduction request using Tipsy. Unit tests cover evidence, duplicate suppression, custody observation and release apologies. A complete natural live disturbance-to-release cycle has not yet been observed.
+
+Bram: retains unfinished projects and deferred blocks; no endgame handoff that discards the project. Full inspection determines completion. Original floor height is retained through roof work. Consumed breakpoints reset and ordinary repairs wait behind the owned build. Terrain preparation levels natural ground and permits bounded supported water reclamation with supplies; player edits and existing buildings remain protected. Live reclamation has not yet been observed.
+
+Jail: supervised final edits completed through Bram, supplied from his inventory. Four equal cells, four iron doors, four levers; 624/624 expected positions matched. All four levers opened and closed their doors. West entrance labelled JAIL, with approach slabs. The sheriff walked through that entrance in the live world. The supervised checks briefly repositioned the two NPCs and returned them to their saved positions; existing projects and court cases were retained.
+
+Recovery is ongoing: carpenter and jail inspected; North civic hall in progress; the remaining supplied-photo shells and registered gaps remain queued. No claim that every building is already finished.
+
+Validation: 271 Node tests passed, Java plugin build and DoorTiming/TerrainPlacement policy checks passed. Source/tests synchronized to C:/Users/jrmym/Documents/ProjectSid/sid-local. Runtime/world state backups remain on the servers. No credentials are included in this archive.
+
+Chrome inspection timed out during the final checks. The included dashboard screenshot records the implemented compact layout before the supervised jail completion. Live API, NPC reply, block inspection and sheriff entrance traversal were verified separately.

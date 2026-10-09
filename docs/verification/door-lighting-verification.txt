@@ -1,0 +1,32 @@
+SID door, lighting and delivery update â€” 2026-10-09
+
+Deployed SIDLocal 2.31.0 and updated Node runtime in LXC 119/120.
+275 Node tests passed. Java build passed with 11 door policy checks and 8 terrain checks.
+
+Doorways:
+- Idle recovery uses a recent unfinished destination, rather than always preferring indoors.
+- Travel refreshes the destination; arrived/stale goals do not pull citizens back toward old jobs.
+- Recovery includes short stalled crossings and retains cached/fresh animal protection.
+- Controlled live Tink home entry and exit passed. Entry used the automatic door_assist fallback; this is not proof of unaided walking at every home.
+- Details: door-light-verification.json.
+
+Lighting:
+- Repeated road surveys no longer put new lanterns above earlier lanterns.
+- Saved road jobs also lose obsolete loose-lantern placements while retaining road/bridge work.
+- Removed 17 confirmed citizen-placed lantern blocks from five live stacks; returned the items to Bram. Existing bridge fittings and stale records were preserved.
+- New posts use five chiseled stone blocks, three spruce fences and two supported hanging lanterns. Arms rotate to fit narrow streets. Posts avoid roads, door approaches, crops, occupied blocks and nearby managed posts, and resume blocked construction after inspection.
+- Pending garden lantern milestones become supplies; future garden goals place flowers instead of standalone lights.
+- CHISELED_STONE_BRICKS was added to the live plugin material list and config reloaded.
+
+Warehouse deliveries:
+- Citizen requests are queued for Barnaby, with duplicate retries coalesced and confirmed gives counted.
+- Barnaby reads warehouse supplies directly; Jasper sorts, files and consolidates chests.
+- Construction reservations keep their priority and direct-fetch fallback. Goods already en route do not trigger duplicate procurement.
+- Citizen and clerk dialogue context identifies Barnaby as the delivery runner.
+- Live logs showed Jasper inspecting/sorting/consolidating and Barnaby fetching supplies. Full coverage of every future dialogue and delivery is not claimed.
+
+Original construction recovery, community boards, jail and Percy behavior remain in place.
+Source changes were synchronized to C:/Users/jrmym/Documents/ProjectSid/sid-local.
+The ZIP contains source, tests and the plugin JAR; authentication settings are excluded.
+
+Live supervised lamp construction completed at 291,68,90 using Tink, with normal warehouse withdrawals and crafting. All 10 placement actions acknowledged; both hanging-lantern states and the stone base passed live RCON checks. Future unattended construction remains a separate observation.

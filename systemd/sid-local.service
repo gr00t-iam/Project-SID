@@ -1,0 +1,28 @@
+[Unit]
+Description=Local Minecraft NPC agent runtime
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=sid-local
+Group=sid-local
+WorkingDirectory=/opt/sid-local
+EnvironmentFile=/opt/sid-local/config/runtime.env
+ExecStart=/usr/bin/node /opt/sid-local/agent-core/main.mjs
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/sid-local
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

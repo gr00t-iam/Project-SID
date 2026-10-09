@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up the SID agent state (memory.json + SQLite) every 6 hours
+
+[Timer]
+OnCalendar=*-*-* 04,10,16,22:35:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

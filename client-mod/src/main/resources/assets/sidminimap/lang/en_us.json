@@ -1,0 +1,8 @@
+{
+  "key.category.sidminimap.minimap": "SID Minimap",
+  "key.sidminimap.toggle": "Show/hide minimap",
+  "key.sidminimap.zoom_in": "Zoom in",
+  "key.sidminimap.zoom_out": "Zoom out",
+  "key.sidminimap.filter": "Filter: all / resources / ores",
+  "key.sidminimap.gps": "Show/hide GPS"
+}

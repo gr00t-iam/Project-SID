@@ -1,0 +1,1273 @@
+[
+  {
+    "name": "forge",
+    "site": "forge",
+    "x": 283,
+    "y": 70,
+    "z": 55,
+    "spec": {
+      "shape": "forge",
+      "door": "east",
+      "material": "STONE_BRICKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "SPRUCE_PLANKS",
+      "width": 9,
+      "depth": 9
+    }
+  },
+  {
+    "name": "watchtower",
+    "site": "watchtower",
+    "x": 270,
+    "y": 70,
+    "z": 54,
+    "spec": {
+      "shape": "tower",
+      "door": "south",
+      "material": "STONE_BRICKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "SPRUCE_PLANKS"
+    }
+  },
+  {
+    "name": "shrine",
+    "site": "shrine",
+    "x": 266,
+    "y": 69,
+    "z": 140,
+    "spec": {
+      "shape": "pavilion",
+      "width": 11,
+      "depth": 11,
+      "material": "STONE_BRICKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "SPRUCE_PLANKS"
+    }
+  },
+  {
+    "name": "market_hall",
+    "site": "market_hall",
+    "x": 235,
+    "y": 68,
+    "z": 102,
+    "spec": {
+      "shape": "pavilion",
+      "material": "BIRCH_PLANKS",
+      "trim": "SPRUCE_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "width": 7,
+      "depth": 7
+    }
+  },
+  {
+    "name": "library",
+    "site": "library",
+    "x": 294,
+    "y": 65,
+    "z": 154,
+    "spec": {
+      "shape": "library",
+      "door": "east",
+      "material": "STONE_BRICKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "SPRUCE_PLANKS",
+      "width": 11,
+      "depth": 9
+    }
+  },
+  {
+    "name": "jail",
+    "site": "jail",
+    "x": 262,
+    "y": 69,
+    "z": 116,
+    "spec": {
+      "shape": "jail",
+      "door": "south"
+    }
+  },
+  {
+    "name": "tavern",
+    "site": "tavern",
+    "x": 319,
+    "y": 64,
+    "z": 114,
+    "spec": {
+      "shape": "tavern",
+      "door": "south"
+    }
+  },
+  {
+    "name": "courthouse",
+    "site": "courthouse",
+    "x": 311,
+    "y": 64,
+    "z": 98,
+    "spec": {
+      "shape": "courthouse",
+      "door": "north"
+    }
+  },
+  {
+    "name": "bakery",
+    "site": "bakery",
+    "x": 263,
+    "y": 69,
+    "z": 128,
+    "spec": {
+      "shape": "bakery",
+      "door": "east"
+    }
+  },
+  {
+    "name": "infirmary",
+    "site": "infirmary",
+    "x": 271,
+    "y": 70,
+    "z": 153,
+    "spec": {
+      "shape": "infirmary",
+      "door": "south"
+    }
+  },
+  {
+    "name": "herb_shed",
+    "site": "herb_shed",
+    "x": 257,
+    "y": 69,
+    "z": 143,
+    "spec": {
+      "shape": "house",
+      "door": "north",
+      "width": 7,
+      "depth": 7,
+      "height": 4,
+      "material": "OAK_PLANKS",
+      "trim": "OAK_LOG",
+      "floor": "OAK_PLANKS",
+      "roof": "SPRUCE_PLANKS",
+      "windows": true
+    }
+  },
+  {
+    "name": "carpenter",
+    "site": "carpenter",
+    "x": 249,
+    "y": 69,
+    "z": 143,
+    "spec": {
+      "shape": "house",
+      "door": "north",
+      "width": 7,
+      "depth": 7,
+      "height": 4,
+      "material": "SPRUCE_PLANKS",
+      "trim": "OAK_LOG",
+      "floor": "OAK_PLANKS",
+      "roof": "SPRUCE_PLANKS",
+      "windows": true
+    }
+  },
+  {
+    "name": "fishmonger",
+    "site": "fishmonger",
+    "x": 233,
+    "y": 67,
+    "z": 139,
+    "spec": {
+      "shape": "house",
+      "door": "north",
+      "width": 7,
+      "depth": 7,
+      "height": 4,
+      "material": "COBBLESTONE",
+      "trim": "OAK_LOG",
+      "floor": "OAK_PLANKS",
+      "roof": "SPRUCE_PLANKS",
+      "windows": true
+    }
+  },
+  {
+    "name": "home for builder",
+    "homeFor": "builder",
+    "x": 294,
+    "y": 69,
+    "z": 81,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "SPRUCE_PLANKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "BLUE_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for guardian",
+    "homeFor": "guardian",
+    "x": 294,
+    "y": 69,
+    "z": 88,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "STONE_BRICKS",
+      "trim": "COBBLESTONE",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "SMOOTH_STONE",
+      "door": "east",
+      "bed": "RED_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for farmer",
+    "homeFor": "farmer",
+    "x": 294,
+    "y": 68,
+    "z": 95,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "OAK_PLANKS",
+      "trim": "OAK_LOG",
+      "roof": "HAY_BLOCK",
+      "floor": "SPRUCE_PLANKS",
+      "door": "east",
+      "bed": "YELLOW_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for scout",
+    "homeFor": "scout",
+    "x": 294,
+    "y": 69,
+    "z": 100,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "BIRCH_PLANKS",
+      "trim": "OAK_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "GREEN_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for merchant",
+    "homeFor": "merchant",
+    "x": 304,
+    "y": 69,
+    "z": 81,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "BRICKS",
+      "trim": "SPRUCE_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "SPRUCE_PLANKS",
+      "door": "west",
+      "bed": "PURPLE_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for crafter",
+    "homeFor": "crafter",
+    "x": 304,
+    "y": 68,
+    "z": 88,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "COBBLESTONE",
+      "trim": "OAK_LOG",
+      "roof": "OAK_PLANKS",
+      "floor": "SMOOTH_STONE",
+      "door": "west",
+      "bed": "ORANGE_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for governor",
+    "homeFor": "governor",
+    "x": 304,
+    "y": 67,
+    "z": 95,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "WHITE_TERRACOTTA",
+      "trim": "SPRUCE_LOG",
+      "roof": "STONE_BRICKS",
+      "floor": "SPRUCE_PLANKS",
+      "door": "west",
+      "bed": "WHITE_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for scribe",
+    "homeFor": "scribe",
+    "x": 304,
+    "y": 67,
+    "z": 102,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "SPRUCE_PLANKS",
+      "trim": "SPRUCE_LOG",
+      "roof": "MOSSY_STONE_BRICKS",
+      "floor": "BIRCH_PLANKS",
+      "door": "west",
+      "bed": "CYAN_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for miner",
+    "homeFor": "miner",
+    "x": 304,
+    "y": 68,
+    "z": 110,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "COBBLESTONE",
+      "trim": "STONE_BRICKS",
+      "roof": "COBBLESTONE",
+      "floor": "SMOOTH_STONE",
+      "door": "west",
+      "bed": "BROWN_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for fisher",
+    "homeFor": "fisher",
+    "x": 294,
+    "y": 69,
+    "z": 107,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "OAK_PLANKS",
+      "trim": "OAK_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "RED_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for smith",
+    "homeFor": "smith",
+    "x": 294,
+    "y": 69,
+    "z": 114,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "BIRCH_PLANKS",
+      "trim": "SPRUCE_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "GREEN_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for priest",
+    "homeFor": "priest",
+    "x": 294,
+    "y": 67,
+    "z": 121,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "OAK_PLANKS",
+      "trim": "OAK_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "RED_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for chef",
+    "homeFor": "chef",
+    "x": 294,
+    "y": 72,
+    "z": 128,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "BIRCH_PLANKS",
+      "trim": "SPRUCE_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "GREEN_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for judge",
+    "homeFor": "judge",
+    "x": 294,
+    "y": 66,
+    "z": 142,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "OAK_PLANKS",
+      "trim": "OAK_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "bed": "RED_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "home for clerk",
+    "homeFor": "clerk",
+    "x": 304,
+    "y": 65,
+    "z": 145,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 3,
+      "material": "SPRUCE_PLANKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "OAK_PLANKS",
+      "door": "north",
+      "bed": "BLUE_BED",
+      "chest": true,
+      "windows": true
+    }
+  },
+  {
+    "name": "North civic hall",
+    "site": "recovered_north_hall",
+    "x": 299,
+    "y": 70,
+    "z": 38,
+    "spec": {
+      "shape": "hall",
+      "width": 13,
+      "depth": 11,
+      "height": 5,
+      "material": "SMOOTH_STONE",
+      "trim": "OAK_LOG",
+      "roof": "STONE_BRICKS",
+      "floor": "OAK_PLANKS",
+      "door": "south"
+    }
+  },
+  {
+    "name": "North archive hall",
+    "site": "recovered_north_archive",
+    "x": 279,
+    "y": 71,
+    "z": 38,
+    "spec": {
+      "shape": "hall",
+      "width": 13,
+      "depth": 11,
+      "height": 5,
+      "material": "STONE_BRICKS",
+      "trim": "OAK_LOG",
+      "roof": "STONE_BRICKS",
+      "floor": "OAK_PLANKS",
+      "door": "south"
+    }
+  },
+  {
+    "name": "West community workshop",
+    "site": "recovered_workshop",
+    "x": 233,
+    "y": 68,
+    "z": 127,
+    "spec": {
+      "shape": "house",
+      "width": 7,
+      "depth": 7,
+      "height": 4,
+      "material": "COBBLESTONE",
+      "trim": "OAK_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "east",
+      "windows": true,
+      "chest": true
+    }
+  },
+  {
+    "name": "Coastal guild hall",
+    "site": "recovered_coastal_hall",
+    "x": 355,
+    "y": 64,
+    "z": 14,
+    "spec": {
+      "shape": "hall",
+      "width": 13,
+      "depth": 11,
+      "height": 5,
+      "material": "COBBLESTONE",
+      "trim": "OAK_LOG",
+      "roof": "SPRUCE_PLANKS",
+      "floor": "OAK_PLANKS",
+      "door": "south"
+    }
+  },
+  {
+    "name": "Founders meeting hall",
+    "site": "recovered_old_hall",
+    "x": 263,
+    "y": 70,
+    "z": 62,
+    "spec": {
+      "shape": "hall",
+      "width": 11,
+      "depth": 9,
+      "height": 5,
+      "material": "STONE_BRICKS",
+      "trim": "STRIPPED_OAK_LOG",
+      "roof": "BRICKS",
+      "floor": "SPRUCE_PLANKS",
+      "door": "south"
+    }
+  },
+  {
+    "name": "Sheriff home walls and roof",
+    "site": "recovered_sheriff_home",
+    "x": 304,
+    "y": 68,
+    "z": 138,
+    "spec": {
+      "shape": "house",
+      "width": 5,
+      "depth": 5,
+      "height": 4,
+      "material": "COBBLESTONE",
+      "trim": "BIRCH_LOG",
+      "roof": "OAK_PLANKS",
+      "floor": "DARK_OAK_PLANKS",
+      "door": "west",
+      "windows": true,
+      "bed": false,
+      "chest": false
+    },
+    "homeFor": "sheriff"
+  },
+  {
+    "name": "Clerk community terrace",
+    "site": "recovered_clerk_terrace",
+    "x": 309,
+    "y": 65,
+    "z": 146,
+    "spec": {
+      "shape": "floor",
+      "width": 8,
+      "depth": 9,
+      "material": "OAK_PLANKS"
+    },
+    "blocks": [
+      {
+        "x": 309,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 309,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 310,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 311,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 312,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 313,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 314,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 315,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 146,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 147,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 148,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 149,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 150,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 151,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 152,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 153,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 65,
+        "z": 154,
+        "block": "OAK_PLANKS"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 146,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 147,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 148,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 149,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 150,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 151,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 152,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 153,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 310,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 311,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 312,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 313,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 314,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 315,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 66,
+        "z": 150,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 66,
+        "z": 151,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 66,
+        "z": 152,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 66,
+        "z": 153,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 66,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 67,
+        "z": 146,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 68,
+        "z": 146,
+        "block": "LANTERN"
+      },
+      {
+        "x": 316,
+        "y": 67,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 316,
+        "y": 68,
+        "z": 154,
+        "block": "LANTERN"
+      },
+      {
+        "x": 309,
+        "y": 67,
+        "z": 154,
+        "block": "OAK_FENCE"
+      },
+      {
+        "x": 309,
+        "y": 68,
+        "z": 154,
+        "block": "LANTERN"
+      }
+    ]
+  },
+  {
+    "name": "four-cell jail renovation",
+    "site": "jail",
+    "x": 258,
+    "y": 69,
+    "z": 116,
+    "spec": {
+      "shape": "jail",
+      "layoutVersion": 2,
+      "roof": "SPRUCE_SLAB"
+    },
+    "renovation": true,
+    "definition": {
+      "name": "Town jail and Sheriff office",
+      "shape": "jail",
+      "x": 258,
+      "y": 69,
+      "z": 116,
+      "door": "west",
+      "layoutVersion": 2,
+      "spec": {
+        "layoutVersion": 2,
+        "roof": "SPRUCE_SLAB"
+      }
+    },
+    "cleanupBounds": {
+      "x1": 258,
+      "x2": 270,
+      "z1": 115,
+      "z2": 115,
+      "y1": 69,
+      "y2": 74
+    }
+  }
+]

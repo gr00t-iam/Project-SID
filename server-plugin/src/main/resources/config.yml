@@ -1,0 +1,167 @@
+bind: 0.0.0.0
+port: 3001
+# Copy the same random token into config/runtime.env on LXC 119.
+token: REPLACE_WITH_RANDOM_64_HEX_CHARACTERS
+allowed-agents: [scout, builder, guardian, miner, farmer, merchant, crafter, governor, scribe, visitor, fisher]
+max-agents: 12
+# Empty world selects the first loaded world. Coordinates below are not used unless configured-spawn is true.
+world: ''
+configured-spawn: false
+spawn: {x: 266.5, y: 69.0, z: 99.5}
+# Keep the simulation inside a bounded area around spawn.
+roam-radius: 128
+allow-attack: true
+allow-interact: true
+# Building: agents place only allowlisted blocks into air/grass inside roam-radius, within
+# build-reach of themselves, and may break only blocks an agent placed (agent-blocks.json).
+allow-build: true
+build-reach: 10
+build-per-minute: 240
+build-materials: [SPRUCE_DOOR, OAK_DOOR, OAK_PLANKS, SPRUCE_PLANKS, BIRCH_PLANKS, OAK_LOG, SPRUCE_LOG, STRIPPED_OAK_LOG,
+  OAK_STAIRS, SPRUCE_STAIRS, OAK_SLAB, SPRUCE_SLAB, OAK_FENCE, SPRUCE_FENCE,
+  COBBLESTONE, STONE_BRICKS, MOSSY_STONE_BRICKS, BRICKS, SMOOTH_STONE, STONE_BRICK_STAIRS, STONE_BRICK_SLAB, COBBLESTONE_WALL,
+  GLASS, GLASS_PANE, WHITE_WOOL, WHITE_TERRACOTTA, DIRT_PATH, GRAVEL, OAK_LEAVES, HAY_BLOCK,
+  TORCH, LANTERN, POPPY, DANDELION, OXEYE_DAISY, CORNFLOWER, SUNFLOWER,
+  REDSTONE_WIRE, REDSTONE_TORCH, REDSTONE_LAMP, REPEATER, COMPARATOR, LEVER, STONE_BUTTON, OAK_PRESSURE_PLATE, OBSERVER, PISTON, STICKY_PISTON, HOPPER, RAIL, POWERED_RAIL,
+  RED_BED, BLUE_BED, YELLOW_BED, GREEN_BED, PURPLE_BED, ORANGE_BED, WHITE_BED, CYAN_BED, BROWN_BED,
+  SWEET_BERRY_BUSH, OAK_SAPLING, SMOKER,
+  CHEST, BARREL, BOOKSHELF, FURNACE, CRAFTING_TABLE, ANVIL, CAULDRON, CAMPFIRE, STONE_BRICK_WALL, COBBLESTONE_SLAB,
+  WHITE_WOOL, RED_WOOL, YELLOW_WOOL, BLUE_WOOL, RED_CARPET, SPRUCE_TRAPDOOR, OAK_TRAPDOOR]
+# Path materials may replace the natural surface (grass/dirt) so paths sit flush; the original is
+# recorded and restored if an agent breaks the path block.
+surface-materials: [DIRT_PATH, GRAVEL]
+# Given once, the first time each agent spawns. Inventories persist in agent-inventories.json.
+starter-items:
+  fisher: ["FISHING_ROD:2", "STRING:4", "STICK:6", "OAK_PLANKS:6", "COAL:8", "BREAD:6", "BOWL:2"]
+  guardian: ["IRON_SWORD:1", "SHIELD:1", "BREAD:8"]
+  builder: ["TORCH:16", "BREAD:4", "OAK_SAPLING:4"]
+  scout: ["POPPY:8", "DANDELION:8", "BREAD:4", "APPLE:4"]
+  miner: ["IRON_PICKAXE:1", "IRON_SHOVEL:1", "IRON_AXE:1", "TORCH:64", "BREAD:8"]
+  farmer: ["WHEAT_SEEDS:32", "CARROT:8", "POTATO:8", "WHEAT:8", "IRON_HOE:1", "BREAD:4"]
+  merchant: ["EMERALD:16", "BREAD:8", "APPLE:8"]
+  crafter: ["OAK_LOG:16", "COAL:8", "COBBLESTONE:16", "IRON_INGOT:3"]
+  governor: ["WRITABLE_BOOK:1", "PAPER:8", "BREAD:4"]
+  scribe: ["BOOK:2", "FEATHER:2", "INK_SAC:2", "BREAD:4"]
+# Mining/gathering (miner): natural blocks below mine-max-y anywhere in the area; above it only inside
+# mine-shafts (staircase entrances) or blocks whose name ends with a gather-anywhere entry (tree logs).
+# Never near lava/water, containers, bedrock or agent-built blocks.
+allow-mine: true
+mine-max-y: 50
+mine-shafts: []
+gather-anywhere: [_LOG]
+# Farming (farmer): till/plant/harvest anywhere in the area; only agent-planted crops are harvested.
+allow-farm: true
+# Trading (right-click a bot empty-handed). Base prices; anything else is valued from its crafting
+# or smelting recipe (e.g. an iron pickaxe = 3 iron ingots + 2 sticks), falling back to 1.
+trade-values:
+  COD: 1
+  SALMON: 1.5
+  COOKED_COD: 2
+  COOKED_SALMON: 3
+  SWEET_BERRIES: 0.5
+  LILY_PAD: 0.5
+  MUSHROOM_STEW: 4
+  RED_MUSHROOM: 1
+  BROWN_MUSHROOM: 1
+  EMERALD: 10
+  DIAMOND: 40
+  NETHERITE_SCRAP: 60
+  GOLD_INGOT: 8
+  IRON_INGOT: 6
+  COPPER_INGOT: 2
+  RAW_IRON: 5
+  RAW_GOLD: 7
+  RAW_COPPER: 1.5
+  COAL: 1
+  CHARCOAL: 1
+  REDSTONE: 1
+  LAPIS_LAZULI: 1.5
+  QUARTZ: 1
+  AMETHYST_SHARD: 1
+  COBBLESTONE: 0.1
+  COBBLED_DEEPSLATE: 0.1
+  DIRT: 0.05
+  SAND: 0.1
+  GRAVEL: 0.1
+  OAK_LOG: 1
+  SPRUCE_LOG: 1
+  BIRCH_LOG: 1
+  JUNGLE_LOG: 1
+  ACACIA_LOG: 1
+  DARK_OAK_LOG: 1
+  MANGROVE_LOG: 1
+  CHERRY_LOG: 1
+  WHEAT: 1
+  WHEAT_SEEDS: 0.2
+  CARROT: 0.8
+  POTATO: 0.8
+  BEETROOT: 0.8
+  APPLE: 2
+  EGG: 0.5
+  LEATHER: 2
+  WHITE_WOOL: 1
+  STRING: 0.5
+  FEATHER: 0.3
+  INK_SAC: 0.5
+  BONE: 0.5
+  GUNPOWDER: 2
+  ENDER_PEARL: 12
+  POPPY: 0.5
+  DANDELION: 0.5
+  OAK_SAPLING: 0.5
+# Minimum offer/ask ratio before a bot accepts; the merchant drives a harder bargain.
+trade-margin:
+  default: 1.0
+  merchant: 1.15
+# Real economy: placing a block uses one item from the agent's inventory. The runtime marks the
+# warehouse bootstrap as free; everything else must be fetched from the warehouse or produced.
+economy: true
+# Put into the first warehouse chests the agents build (once).
+starter-stockpile: ["SPRUCE_PLANKS:384", "OAK_PLANKS:384", "BIRCH_PLANKS:128", "STONE_BRICKS:384", "COBBLESTONE:256",
+  "BRICKS:192", "SMOOTH_STONE:128", "WHITE_TERRACOTTA:64", "MOSSY_STONE_BRICKS:64", "OAK_LOG:96", "SPRUCE_LOG:64", "STRIPPED_OAK_LOG:32",
+  "GLASS_PANE:128", "LANTERN:48", "TORCH:64", "GRAVEL:256", "DIRT_PATH:128", "OAK_FENCE:64", "SPRUCE_SLAB:64", "STONE_BRICK_STAIRS:32",
+  "HAY_BLOCK:32", "BOOKSHELF:24", "FURNACE:4", "CRAFTING_TABLE:4", "ANVIL:1", "CAULDRON:1", "BARREL:8", "CHEST:8",
+  "RED_BED:2", "BLUE_BED:2", "YELLOW_BED:2", "GREEN_BED:2", "PURPLE_BED:2", "ORANGE_BED:2", "WHITE_BED:2", "CYAN_BED:2", "BROWN_BED:2",
+  "POPPY:32", "DANDELION:32", "CORNFLOWER:16", "WHITE_WOOL:32", "RED_WOOL:16", "YELLOW_WOOL:16", "RED_CARPET:16", "CAMPFIRE:2",
+  "BREAD:64", "APPLE:32", "COAL:64", "WHEAT_SEEDS:32", "EMERALD:48", "IRON_INGOT:16", "STONE_BRICK_WALL:64", "COBBLESTONE_SLAB:64"]
+# Agents that can be hurt (they wear armour, eat to heal and respawn 20 s after falling).
+vulnerable-agents: [guardian]
+# Items handed to an existing agent once (for agents created before these were added to starter-items).
+grant-once:
+  guardian: ["IRON_HELMET:1", "IRON_CHESTPLATE:1", "IRON_LEGGINGS:1", "IRON_BOOTS:1", "BREAD:16"]
+# Names shown above the agents, and dyed-leather uniforms (hex colours) so each role is easy to spot.
+display-names:
+  fisher: "Finley the Angler"
+  scout: "Wren the Scout"
+  builder: "Bram the Builder"
+  guardian: "Sir Aldric"
+  miner: "Dorn the Miner"
+  farmer: "Hazel the Farmer"
+  merchant: "Marlo the Trader"
+  crafter: "Tink the Crafter"
+  governor: "Governor Elia"
+  scribe: "Quill the Scribe"
+uniforms:
+  fisher: "#1E88E5"
+  scout: "#4CAF50"
+  builder: "#E67E22"
+  guardian: "#B71C1C"
+  miner: "#6D4C41"
+  farmer: "#F1C40F"
+  merchant: "#8E44AD"
+  crafter: "#607D8B"
+  governor: "#FFFFFF"
+  scribe: "#2C3E50"
+  visitor: "#16A085"
+# Temporary visitors (travelling merchants, travellers, bards) may be granted wares and dismissed.
+visitor-agents: [visitor]
+# Finley the Angler (roles/fisher.mjs): day trips beyond the town to forage (chunks around him stay
+# loaded while he is out), picks up fallen apples/berries/mushrooms, and fishing rods last rod-durability casts.
+expedition-agents: [fisher]
+expedition-radius: 150
+forager-agents: [fisher]
+rod-durability: 64
+
+# Custom day length (real minutes). Daylight = dawn to dusk, night = dusk to dawn. 0 = vanilla 20-minute cycle.
+day-minutes: 0
+night-minutes: 0

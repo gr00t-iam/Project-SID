@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Optional citizen profile fields in agents.json (religion, culture, hobbies); anything left out is derived from the role and values",
+  "type": "object",
+  "properties": {
+    "charisma": {"type": "number", "minimum": 0, "maximum": 1},
+    "religion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deity_or_faith": {"type": ["string", "null"], "maxLength": 60},
+        "devotion": {"type": "number", "minimum": 0, "maximum": 1},
+        "skepticism": {"type": "number", "minimum": 0, "maximum": 1},
+        "converted_at": {"type": ["integer", "null"]}
+      }
+    },
+    "culture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heritage": {"type": "string", "maxLength": 60},
+        "core_values": {"type": "array", "maxItems": 6, "items": {"enum": ["selfPreservation", "community", "craftsmanship", "curiosity", "sociability", "tradition"]}},
+        "tradition_adherence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "hobbies": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"enum": ["reading", "gardening", "music", "whittling", "angling", "stargazing", "storytelling", "cooking", "prayer"]},
+          "proficiency": {"type": "number", "minimum": 0, "maximum": 1},
+          "leisure_weight": {"type": "number", "minimum": 0, "maximum": 1},
+          "last_practiced": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}

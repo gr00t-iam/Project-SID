@@ -1,0 +1,9 @@
+Deployed 2026-10-09 to LXC119 /opt/sid-local.
+Calendar: America/Chicago, daily midnight including daylight saving.
+Ten new distinct templates: four public landscaping projects, six craft-and-deliver supply projects. Yesterday templates avoided; fourteen-day history retained.
+Progress persisted; only acknowledged placement and delivered freshly crafted goods credited. Unknown outcomes held for inspection.
+Farmland, buildings, roads, player edits and essential food/timber/medical roles protected.
+247 local tests passed. Live service active, bridge ready, ten cards rendered, Quill and Vulcan selected daily work. Live complete milestone and next midnight not yet observed.
+Duplicate Town Warehouse card removed; dedicated Warehouse tab verified with 157 item types.
+Live rollback code and state: /opt/sid-local/backups/community-20261009.
+Local baseline synchronized: C:/Users/jrmym/Documents/ProjectSid/sid-local.
